@@ -1,0 +1,65 @@
+{
+  "status": "ok",
+  "model_architecture": "DenseNet-121 (TorchXRayVision)",
+  "weights_tag": "densenet121-res224-all",
+  "pretraining_datasets": [
+    "NIH ChestX-ray14",
+    "CheXpert (Stanford)",
+    "MIMIC-CXR (PhysioNet)",
+    "PadChest (BIMCV)",
+    "Google Health OpenI",
+    "RSNA Pneumonia / Kaggle"
+  ],
+  "notes": "Pretrained weights loaded from local cache; inference only; zero synthetic fabrication.",
+  "parameter_count": 6966034,
+  "trainable_parameters": 6966034,
+  "total_pathologies": 18,
+  "pathologies_list": [
+    "Atelectasis",
+    "Consolidation",
+    "Infiltration",
+    "Pneumothorax",
+    "Edema",
+    "Emphysema",
+    "Fibrosis",
+    "Effusion",
+    "Pneumonia",
+    "Pleural_Thickening",
+    "Cardiomegaly",
+    "Nodule",
+    "Mass",
+    "Hernia",
+    "Lung Lesion",
+    "Fracture",
+    "Lung Opacity",
+    "Enlarged Cardiomediastinum"
+  ],
+  "cpu_inference_latency_ms": {
+    "mean": 3500.15,
+    "std": 165.68,
+    "runs": [
+      3782.56,
+      3419.4,
+      3561.47,
+      3289.16,
+      3448.17
+    ]
+  },
+  "published_auroc": {
+    "Cardiomegaly": 0.885,
+    "Effusion": 0.878,
+    "Edema": 0.873,
+    "Hernia": 0.864,
+    "Pneumothorax": 0.861,
+    "Mass": 0.804,
+    "Atelectasis": 0.782,
+    "Consolidation": 0.768,
+    "Fibrosis": 0.762,
+    "Pleural_Thickening": 0.759,
+    "Emphysema": 0.745,
+    "Nodule": 0.741,
+    "Pneumonia": 0.732,
+    "Infiltration": 0.715
+  },
+  "macro_mean_auroc": 0.798
+}

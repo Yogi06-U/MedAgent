@@ -1,0 +1,419 @@
+{
+  "total_vignettes": 25,
+  "engine_mode": "rule_engine",
+  "top1_matches": 25,
+  "top1_accuracy": 1.0,
+  "top3_matches": 25,
+  "top3_accuracy": 1.0,
+  "grounding_validity_rate": 1.0,
+  "mean_latency_ms": 0.34,
+  "case_results": [
+    {
+      "vignette_id": "V01",
+      "expected_condition": "Community-Acquired Pneumonia",
+      "predicted_top1": "Community-Acquired Pneumonia",
+      "all_predicted": [
+        "Community-Acquired Pneumonia",
+        "Sepsis / Severe Systemic Infection",
+        "COPD Acute Exacerbation",
+        "Pleural Effusion",
+        "Pneumothorax"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 2.3
+    },
+    {
+      "vignette_id": "V02",
+      "expected_condition": "Acute Kidney Injury",
+      "predicted_top1": "Acute Kidney Injury",
+      "all_predicted": [
+        "Acute Kidney Injury",
+        "Metabolic Acidosis",
+        "Chronic Kidney Disease",
+        "Severe Hyperkalemia",
+        "Sepsis / Severe Systemic Infection"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.28
+    },
+    {
+      "vignette_id": "V03",
+      "expected_condition": "Microcytic Iron Deficiency Anemia",
+      "predicted_top1": "Microcytic Iron Deficiency Anemia",
+      "all_predicted": [
+        "Microcytic Iron Deficiency Anemia",
+        "Cardiomegaly"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.21
+    },
+    {
+      "vignette_id": "V04",
+      "expected_condition": "Congestive Heart Failure / Pulmonary Edema",
+      "predicted_top1": "Congestive Heart Failure / Pulmonary Edema",
+      "all_predicted": [
+        "Congestive Heart Failure / Pulmonary Edema",
+        "Cardiomegaly",
+        "Acute Myocardial Infarction / ACS",
+        "Community-Acquired Pneumonia",
+        "Pleural Effusion"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.24
+    },
+    {
+      "vignette_id": "V05",
+      "expected_condition": "Pulmonary Embolism",
+      "predicted_top1": "Pulmonary Embolism",
+      "all_predicted": [
+        "Pulmonary Embolism",
+        "Pneumothorax",
+        "Community-Acquired Pneumonia",
+        "Pleural Effusion",
+        "Metabolic Acidosis"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.24
+    },
+    {
+      "vignette_id": "V06",
+      "expected_condition": "Diabetic Ketoacidosis",
+      "predicted_top1": "Diabetic Ketoacidosis",
+      "all_predicted": [
+        "Diabetic Ketoacidosis",
+        "Metabolic Acidosis",
+        "Acute Kidney Injury",
+        "Acute Pancreatitis",
+        "Severe Hyperkalemia"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.29
+    },
+    {
+      "vignette_id": "V07",
+      "expected_condition": "Chronic Kidney Disease",
+      "predicted_top1": "Chronic Kidney Disease",
+      "all_predicted": [
+        "Chronic Kidney Disease",
+        "Acute Kidney Injury",
+        "Severe Hyperkalemia",
+        "Sepsis / Severe Systemic Infection",
+        "Metabolic Acidosis"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.25
+    },
+    {
+      "vignette_id": "V08",
+      "expected_condition": "Acute Myocardial Infarction / ACS",
+      "predicted_top1": "Acute Myocardial Infarction / ACS",
+      "all_predicted": [
+        "Acute Myocardial Infarction / ACS",
+        "Pulmonary Embolism",
+        "Hypoglycemia"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.22
+    },
+    {
+      "vignette_id": "V09",
+      "expected_condition": "Sepsis / Severe Systemic Infection",
+      "predicted_top1": "Sepsis / Severe Systemic Infection",
+      "all_predicted": [
+        "Sepsis / Severe Systemic Infection",
+        "Metabolic Acidosis",
+        "Community-Acquired Pneumonia",
+        "Normocytic Anemia of Chronic Disease",
+        "Hypoglycemia"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.27
+    },
+    {
+      "vignette_id": "V10",
+      "expected_condition": "Acute Hepatocellular Injury",
+      "predicted_top1": "Acute Hepatocellular Injury",
+      "all_predicted": [
+        "Acute Hepatocellular Injury",
+        "Cholestasis / Obstructive Biliary Disease"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.24
+    },
+    {
+      "vignette_id": "V11",
+      "expected_condition": "Cholestasis / Obstructive Biliary Disease",
+      "predicted_top1": "Cholestasis / Obstructive Biliary Disease",
+      "all_predicted": [
+        "Cholestasis / Obstructive Biliary Disease",
+        "Acute Hepatocellular Injury",
+        "Chronic Kidney Disease",
+        "Acute Pancreatitis"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.25
+    },
+    {
+      "vignette_id": "V12",
+      "expected_condition": "Acute Pancreatitis",
+      "predicted_top1": "Acute Pancreatitis",
+      "all_predicted": [
+        "Acute Pancreatitis",
+        "Sepsis / Severe Systemic Infection",
+        "Community-Acquired Pneumonia",
+        "Normocytic Anemia of Chronic Disease",
+        "Pleural Effusion"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.29
+    },
+    {
+      "vignette_id": "V13",
+      "expected_condition": "Cardiomegaly",
+      "predicted_top1": "Cardiomegaly",
+      "all_predicted": [
+        "Cardiomegaly",
+        "Congestive Heart Failure / Pulmonary Edema",
+        "Acute Myocardial Infarction / ACS",
+        "Community-Acquired Pneumonia",
+        "Pleural Effusion"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.26
+    },
+    {
+      "vignette_id": "V14",
+      "expected_condition": "Pneumothorax",
+      "predicted_top1": "Pneumothorax",
+      "all_predicted": [
+        "Pneumothorax",
+        "Community-Acquired Pneumonia",
+        "Pleural Effusion",
+        "Pulmonary Embolism",
+        "COPD Acute Exacerbation"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.28
+    },
+    {
+      "vignette_id": "V15",
+      "expected_condition": "Macrocytic / Megaloblastic Anemia",
+      "predicted_top1": "Macrocytic / Megaloblastic Anemia",
+      "all_predicted": [
+        "Macrocytic / Megaloblastic Anemia",
+        "Severe Hyperkalemia"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.26
+    },
+    {
+      "vignette_id": "V16",
+      "expected_condition": "Severe Hyperkalemia",
+      "predicted_top1": "Severe Hyperkalemia",
+      "all_predicted": [
+        "Severe Hyperkalemia",
+        "Acute Kidney Injury",
+        "Chronic Kidney Disease",
+        "Macrocytic / Megaloblastic Anemia"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.27
+    },
+    {
+      "vignette_id": "V17",
+      "expected_condition": "Hypokalemia",
+      "predicted_top1": "Hypokalemia",
+      "all_predicted": [
+        "Hypokalemia",
+        "Severe Hyperkalemia",
+        "Type 2 Diabetes Mellitus",
+        "Hypercalcemia",
+        "Metabolic Acidosis"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.27
+    },
+    {
+      "vignette_id": "V18",
+      "expected_condition": "Hyponatremia",
+      "predicted_top1": "Hyponatremia",
+      "all_predicted": [
+        "Hyponatremia",
+        "Acute Kidney Injury",
+        "Metabolic Acidosis",
+        "Congestive Heart Failure / Pulmonary Edema",
+        "Hypoglycemia"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.26
+    },
+    {
+      "vignette_id": "V19",
+      "expected_condition": "Hypercalcemia",
+      "predicted_top1": "Hypercalcemia",
+      "all_predicted": [
+        "Hypercalcemia",
+        "Hypokalemia",
+        "Type 2 Diabetes Mellitus"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.23
+    },
+    {
+      "vignette_id": "V20",
+      "expected_condition": "COPD Acute Exacerbation",
+      "predicted_top1": "COPD Acute Exacerbation",
+      "all_predicted": [
+        "COPD Acute Exacerbation",
+        "Community-Acquired Pneumonia",
+        "Pleural Effusion",
+        "Normocytic Anemia of Chronic Disease"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.23
+    },
+    {
+      "vignette_id": "V21",
+      "expected_condition": "Pleural Effusion",
+      "predicted_top1": "Pleural Effusion",
+      "all_predicted": [
+        "Pleural Effusion",
+        "Community-Acquired Pneumonia",
+        "Congestive Heart Failure / Pulmonary Edema",
+        "Pulmonary Embolism",
+        "Pneumothorax"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.27
+    },
+    {
+      "vignette_id": "V22",
+      "expected_condition": "Type 2 Diabetes Mellitus",
+      "predicted_top1": "Type 2 Diabetes Mellitus",
+      "all_predicted": [
+        "Type 2 Diabetes Mellitus",
+        "Diabetic Ketoacidosis",
+        "Hypokalemia",
+        "Normocytic Anemia of Chronic Disease",
+        "Hypercalcemia"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.25
+    },
+    {
+      "vignette_id": "V23",
+      "expected_condition": "Hypoglycemia",
+      "predicted_top1": "Hypoglycemia",
+      "all_predicted": [
+        "Hypoglycemia",
+        "Acute Myocardial Infarction / ACS",
+        "Sepsis / Severe Systemic Infection"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.27
+    },
+    {
+      "vignette_id": "V24",
+      "expected_condition": "Metabolic Acidosis",
+      "predicted_top1": "Metabolic Acidosis",
+      "all_predicted": [
+        "Metabolic Acidosis",
+        "Diabetic Ketoacidosis",
+        "Acute Kidney Injury",
+        "Hyponatremia",
+        "Severe Hyperkalemia"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.25
+    },
+    {
+      "vignette_id": "V25",
+      "expected_condition": "Normocytic Anemia of Chronic Disease",
+      "predicted_top1": "Normocytic Anemia of Chronic Disease",
+      "all_predicted": [
+        "Normocytic Anemia of Chronic Disease",
+        "Sepsis / Severe Systemic Infection",
+        "Community-Acquired Pneumonia",
+        "Chronic Kidney Disease",
+        "Acute Pancreatitis"
+      ],
+      "top1_match": true,
+      "top3_match": true,
+      "grounded": true,
+      "mode": "rule_engine",
+      "latency_ms": 0.29
+    }
+  ]
+}

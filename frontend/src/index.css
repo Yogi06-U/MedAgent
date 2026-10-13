@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-ink: #0E3B43;
+    --color-signal: #1F8A9A;
+    --color-paper: #F3F7F8;
+    --color-card: #FFFFFF;
+    --color-border: #D1DFE3;
+    --color-text-main: #14282B;
+    --color-text-muted: #526E72;
+    --color-urgent: #C0392B;
+    --color-caution: #C98A00;
+    --color-ok: #2F7D5B;
+  }
+
+  .dark {
+    --color-ink: #0A262C;
+    --color-signal: #25ADC1;
+    --color-paper: #0B1315;
+    --color-card: #132024;
+    --color-border: #23393E;
+    --color-text-main: #E2ECEE;
+    --color-text-muted: #8AA4A8;
+    --color-urgent: #E74C3C;
+    --color-caution: #F39C12;
+    --color-ok: #27AE60;
+  }
+
+  body {
+    font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Accessibility focus ring */
+  *:focus-visible {
+    outline: 2px solid #1F8A9A;
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

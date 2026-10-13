@@ -1,0 +1,449 @@
+{
+  "hemoglobin": {
+    "canonical": "Hemoglobin",
+    "aliases": ["hb", "hgb", "hemoglobin", "haemoglobin"],
+    "unit": "g/dL",
+    "male": {"low": 13.8, "high": 17.2},
+    "female": {"low": 12.1, "high": 15.1},
+    "default": {"low": 12.0, "high": 17.5},
+    "critical_low": 7.0,
+    "critical_high": 20.0
+  },
+  "hematocrit": {
+    "canonical": "Hematocrit",
+    "aliases": ["hct", "hematocrit", "haematocrit", "pcv"],
+    "unit": "%",
+    "male": {"low": 40.7, "high": 50.3},
+    "female": {"low": 36.1, "high": 44.3},
+    "default": {"low": 36.0, "high": 50.0},
+    "critical_low": 20.0,
+    "critical_high": 60.0
+  },
+  "wbc": {
+    "canonical": "WBC Count",
+    "aliases": ["wbc", "white blood cell", "white blood count", "tlc", "total leukocyte count", "leukocytes"],
+    "unit": "x10^3/uL",
+    "default": {"low": 4.5, "high": 11.0},
+    "critical_low": 2.0,
+    "critical_high": 30.0
+  },
+  "platelets": {
+    "canonical": "Platelet Count",
+    "aliases": ["platelets", "plt", "platelet count", "thrombocytes"],
+    "unit": "x10^3/uL",
+    "default": {"low": 150.0, "high": 450.0},
+    "critical_low": 50.0,
+    "critical_high": 1000.0
+  },
+  "rbc": {
+    "canonical": "RBC Count",
+    "aliases": ["rbc", "red blood cell", "red blood count", "erythrocytes"],
+    "unit": "x10^6/uL",
+    "male": {"low": 4.7, "high": 6.1},
+    "female": {"low": 4.2, "high": 5.4},
+    "default": {"low": 4.2, "high": 6.1}
+  },
+  "mcv": {
+    "canonical": "MCV",
+    "aliases": ["mcv", "mean corpuscular volume"],
+    "unit": "fL",
+    "default": {"low": 80.0, "high": 100.0}
+  },
+  "mch": {
+    "canonical": "MCH",
+    "aliases": ["mch", "mean corpuscular hemoglobin"],
+    "unit": "pg",
+    "default": {"low": 27.0, "high": 33.0}
+  },
+  "mchc": {
+    "canonical": "MCHC",
+    "aliases": ["mchc", "mean corpuscular hemoglobin concentration"],
+    "unit": "g/dL",
+    "default": {"low": 32.0, "high": 36.0}
+  },
+  "rdw": {
+    "canonical": "RDW",
+    "aliases": ["rdw", "red cell distribution width", "rdw-cv"],
+    "unit": "%",
+    "default": {"low": 11.5, "high": 14.5}
+  },
+  "neutrophils": {
+    "canonical": "Neutrophils (%)",
+    "aliases": ["neutrophils", "neutrophil", "segs", "polys", "anc %"],
+    "unit": "%",
+    "default": {"low": 40.0, "high": 75.0}
+  },
+  "lymphocytes": {
+    "canonical": "Lymphocytes (%)",
+    "aliases": ["lymphocytes", "lymphocyte", "lymphs"],
+    "unit": "%",
+    "default": {"low": 20.0, "high": 45.0}
+  },
+  "monocytes": {
+    "canonical": "Monocytes (%)",
+    "aliases": ["monocytes", "monocyte", "monos"],
+    "unit": "%",
+    "default": {"low": 2.0, "high": 10.0}
+  },
+  "eosinophils": {
+    "canonical": "Eosinophils (%)",
+    "aliases": ["eosinophils", "eosinophil", "eos"],
+    "unit": "%",
+    "default": {"low": 1.0, "high": 6.0}
+  },
+  "basophils": {
+    "canonical": "Basophils (%)",
+    "aliases": ["basophils", "basophil", "basos"],
+    "unit": "%",
+    "default": {"low": 0.0, "high": 2.0}
+  },
+  "fasting_glucose": {
+    "canonical": "Fasting Glucose",
+    "aliases": ["fasting blood sugar", "fbs", "fasting glucose", "glucose fasting", "glu f"],
+    "unit": "mg/dL",
+    "default": {"low": 70.0, "high": 99.0},
+    "critical_low": 54.0,
+    "critical_high": 300.0
+  },
+  "postprandial_glucose": {
+    "canonical": "Postprandial Glucose",
+    "aliases": ["ppbs", "postprandial glucose", "post prandial blood sugar", "glucose pp", "2hr postprandial glucose"],
+    "unit": "mg/dL",
+    "default": {"low": 70.0, "high": 140.0},
+    "critical_high": 350.0
+  },
+  "random_glucose": {
+    "canonical": "Random Glucose",
+    "aliases": ["glucose", "random blood sugar", "rbs", "blood sugar", "random glucose", "blood glucose"],
+    "unit": "mg/dL",
+    "default": {"low": 70.0, "high": 140.0},
+    "critical_low": 50.0,
+    "critical_high": 400.0
+  },
+  "hba1c": {
+    "canonical": "HbA1c",
+    "aliases": ["hba1c", "glycated hemoglobin", "a1c", "hemoglobin a1c"],
+    "unit": "%",
+    "default": {"low": 4.0, "high": 5.6}
+  },
+  "blood_urea_nitrogen": {
+    "canonical": "BUN",
+    "aliases": ["bun", "blood urea nitrogen"],
+    "unit": "mg/dL",
+    "default": {"low": 7.0, "high": 20.0},
+    "critical_high": 100.0
+  },
+  "urea": {
+    "canonical": "Blood Urea",
+    "aliases": ["urea", "blood urea", "serum urea"],
+    "unit": "mg/dL",
+    "default": {"low": 15.0, "high": 45.0},
+    "critical_high": 150.0
+  },
+  "creatinine": {
+    "canonical": "Serum Creatinine",
+    "aliases": ["creatinine", "serum creatinine", "creat", "cr", "s.cr"],
+    "unit": "mg/dL",
+    "male": {"low": 0.7, "high": 1.3},
+    "female": {"low": 0.5, "high": 1.1},
+    "default": {"low": 0.5, "high": 1.3},
+    "critical_high": 5.0
+  },
+  "egfr": {
+    "canonical": "eGFR",
+    "aliases": ["egfr", "estimated gfr", "glomerular filtration rate"],
+    "unit": "mL/min/1.73m2",
+    "default": {"low": 60.0, "high": 130.0},
+    "critical_low": 15.0
+  },
+  "sodium": {
+    "canonical": "Sodium",
+    "aliases": ["sodium", "na", "serum sodium", "na+"],
+    "unit": "mEq/L",
+    "default": {"low": 135.0, "high": 145.0},
+    "critical_low": 120.0,
+    "critical_high": 160.0
+  },
+  "potassium": {
+    "canonical": "Potassium",
+    "aliases": ["potassium", "k", "serum potassium", "k+"],
+    "unit": "mEq/L",
+    "default": {"low": 3.5, "high": 5.0},
+    "critical_low": 2.8,
+    "critical_high": 6.2
+  },
+  "chloride": {
+    "canonical": "Chloride",
+    "aliases": ["chloride", "cl", "serum chloride", "cl-"],
+    "unit": "mEq/L",
+    "default": {"low": 96.0, "high": 106.0}
+  },
+  "bicarbonate": {
+    "canonical": "Bicarbonate / CO2",
+    "aliases": ["bicarbonate", "hco3", "serum bicarbonate", "co2", "total co2"],
+    "unit": "mEq/L",
+    "default": {"low": 22.0, "high": 29.0},
+    "critical_low": 10.0,
+    "critical_high": 40.0
+  },
+  "calcium": {
+    "canonical": "Serum Calcium",
+    "aliases": ["calcium", "ca", "serum calcium", "total calcium"],
+    "unit": "mg/dL",
+    "default": {"low": 8.5, "high": 10.2},
+    "critical_low": 6.5,
+    "critical_high": 13.0
+  },
+  "magnesium": {
+    "canonical": "Magnesium",
+    "aliases": ["magnesium", "mg", "serum magnesium"],
+    "unit": "mg/dL",
+    "default": {"low": 1.7, "high": 2.2},
+    "critical_low": 1.0,
+    "critical_high": 4.5
+  },
+  "phosphate": {
+    "canonical": "Phosphate",
+    "aliases": ["phosphate", "phosphorus", "po4", "inorganic phosphorus"],
+    "unit": "mg/dL",
+    "default": {"low": 2.5, "high": 4.5}
+  },
+  "alt": {
+    "canonical": "ALT (SGPT)",
+    "aliases": ["alt", "sgpt", "alanine aminotransferase", "alanine transaminase"],
+    "unit": "U/L",
+    "male": {"low": 10.0, "high": 50.0},
+    "female": {"low": 7.0, "high": 35.0},
+    "default": {"low": 7.0, "high": 50.0},
+    "critical_high": 500.0
+  },
+  "ast": {
+    "canonical": "AST (SGOT)",
+    "aliases": ["ast", "sgot", "aspartate aminotransferase", "aspartate transaminase"],
+    "unit": "U/L",
+    "male": {"low": 10.0, "high": 45.0},
+    "female": {"low": 9.0, "high": 32.0},
+    "default": {"low": 9.0, "high": 45.0},
+    "critical_high": 500.0
+  },
+  "alp": {
+    "canonical": "Alkaline Phosphatase",
+    "aliases": ["alp", "alkaline phosphatase", "alk phos"],
+    "unit": "U/L",
+    "default": {"low": 44.0, "high": 147.0}
+  },
+  "total_bilirubin": {
+    "canonical": "Total Bilirubin",
+    "aliases": ["total bilirubin", "bilirubin total", "t.bili", "t bili", "serum bilirubin"],
+    "unit": "mg/dL",
+    "default": {"low": 0.2, "high": 1.2},
+    "critical_high": 15.0
+  },
+  "direct_bilirubin": {
+    "canonical": "Direct Bilirubin",
+    "aliases": ["direct bilirubin", "conjugated bilirubin", "d.bili", "d bili"],
+    "unit": "mg/dL",
+    "default": {"low": 0.0, "high": 0.3}
+  },
+  "total_protein": {
+    "canonical": "Total Protein",
+    "aliases": ["total protein", "protein total", "serum protein"],
+    "unit": "g/dL",
+    "default": {"low": 6.0, "high": 8.3}
+  },
+  "albumin": {
+    "canonical": "Serum Albumin",
+    "aliases": ["albumin", "serum albumin", "alb"],
+    "unit": "g/dL",
+    "default": {"low": 3.5, "high": 5.0},
+    "critical_low": 2.0
+  },
+  "globulin": {
+    "canonical": "Globulin",
+    "aliases": ["globulin", "serum globulin"],
+    "unit": "g/dL",
+    "default": {"low": 2.0, "high": 3.5}
+  },
+  "ggt": {
+    "canonical": "GGT",
+    "aliases": ["ggt", "gamma gt", "gamma-glutamyl transferase", "gamma glutamyl transpeptidase"],
+    "unit": "U/L",
+    "male": {"low": 9.0, "high": 48.0},
+    "female": {"low": 9.0, "high": 36.0},
+    "default": {"low": 9.0, "high": 48.0}
+  },
+  "total_cholesterol": {
+    "canonical": "Total Cholesterol",
+    "aliases": ["total cholesterol", "cholesterol", "cholesterol total", "tc"],
+    "unit": "mg/dL",
+    "default": {"low": 120.0, "high": 200.0}
+  },
+  "triglycerides": {
+    "canonical": "Triglycerides",
+    "aliases": ["triglycerides", "tg", "trigs"],
+    "unit": "mg/dL",
+    "default": {"low": 40.0, "high": 150.0},
+    "critical_high": 1000.0
+  },
+  "hdl_cholesterol": {
+    "canonical": "HDL Cholesterol",
+    "aliases": ["hdl", "hdl cholesterol", "high density lipoprotein"],
+    "unit": "mg/dL",
+    "male": {"low": 40.0, "high": 80.0},
+    "female": {"low": 50.0, "high": 90.0},
+    "default": {"low": 40.0, "high": 90.0}
+  },
+  "ldl_cholesterol": {
+    "canonical": "LDL Cholesterol",
+    "aliases": ["ldl", "ldl cholesterol", "low density lipoprotein"],
+    "unit": "mg/dL",
+    "default": {"low": 50.0, "high": 100.0}
+  },
+  "tsh": {
+    "canonical": "TSH",
+    "aliases": ["tsh", "thyroid stimulating hormone"],
+    "unit": "uIU/mL",
+    "default": {"low": 0.4, "high": 4.5}
+  },
+  "free_t4": {
+    "canonical": "Free T4",
+    "aliases": ["free t4", "ft4", "free thyroxine"],
+    "unit": "ng/dL",
+    "default": {"low": 0.8, "high": 1.8}
+  },
+  "free_t3": {
+    "canonical": "Free T3",
+    "aliases": ["free t3", "ft3", "free triiodothyronine"],
+    "unit": "pg/mL",
+    "default": {"low": 2.3, "high": 4.2}
+  },
+  "troponin_i": {
+    "canonical": "Troponin I",
+    "aliases": ["troponin i", "trop i", "ctni", "hs-ctni", "high sensitivity troponin i"],
+    "unit": "ng/mL",
+    "default": {"low": 0.0, "high": 0.04},
+    "critical_high": 0.4
+  },
+  "troponin_t": {
+    "canonical": "Troponin T",
+    "aliases": ["troponin t", "trop t", "ctnt", "hs-ctnt", "high sensitivity troponin t"],
+    "unit": "ng/mL",
+    "default": {"low": 0.0, "high": 0.014},
+    "critical_high": 0.1
+  },
+  "lactate": {
+    "canonical": "Lactate",
+    "aliases": ["lactate", "lactic acid", "serum lactate"],
+    "unit": "mmol/L",
+    "default": {"low": 0.5, "high": 2.0},
+    "critical_high": 4.0
+  },
+  "crp": {
+    "canonical": "C-Reactive Protein",
+    "aliases": ["crp", "c-reactive protein", "c reactive protein", "hs-crp"],
+    "unit": "mg/L",
+    "default": {"low": 0.0, "high": 5.0},
+    "critical_high": 100.0
+  },
+  "esr": {
+    "canonical": "ESR",
+    "aliases": ["esr", "erythrocyte sedimentation rate", "sed rate"],
+    "unit": "mm/hr",
+    "male": {"low": 0.0, "high": 15.0},
+    "female": {"low": 0.0, "high": 20.0},
+    "default": {"low": 0.0, "high": 20.0}
+  },
+  "procalcitonin": {
+    "canonical": "Procalcitonin",
+    "aliases": ["procalcitonin", "pct"],
+    "unit": "ng/mL",
+    "default": {"low": 0.0, "high": 0.1},
+    "critical_high": 2.0
+  },
+  "ferritin": {
+    "canonical": "Ferritin",
+    "aliases": ["ferritin", "serum ferritin"],
+    "unit": "ng/mL",
+    "male": {"low": 24.0, "high": 336.0},
+    "female": {"low": 11.0, "high": 307.0},
+    "default": {"low": 15.0, "high": 300.0}
+  },
+  "serum_iron": {
+    "canonical": "Serum Iron",
+    "aliases": ["iron", "serum iron", "fe"],
+    "unit": "ug/dL",
+    "default": {"low": 60.0, "high": 170.0}
+  },
+  "tibc": {
+    "canonical": "TIBC",
+    "aliases": ["tibc", "total iron binding capacity"],
+    "unit": "ug/dL",
+    "default": {"low": 240.0, "high": 450.0}
+  },
+  "vitamin_b12": {
+    "canonical": "Vitamin B12",
+    "aliases": ["vitamin b12", "vit b12", "b12", "cobalamin"],
+    "unit": "pg/mL",
+    "default": {"low": 200.0, "high": 900.0}
+  },
+  "folate": {
+    "canonical": "Serum Folate",
+    "aliases": ["folate", "folic acid", "serum folate"],
+    "unit": "ng/mL",
+    "default": {"low": 3.0, "high": 17.0}
+  },
+  "vitamin_d": {
+    "canonical": "Vitamin D (25-OH)",
+    "aliases": ["vitamin d", "vit d", "25-hydroxyvitamin d", "25-oh vitamin d", "cholecalciferol"],
+    "unit": "ng/mL",
+    "default": {"low": 30.0, "high": 100.0}
+  },
+  "inr": {
+    "canonical": "INR",
+    "aliases": ["inr", "prothrombin time inr", "pt inr", "pt/inr"],
+    "unit": "ratio",
+    "default": {"low": 0.8, "high": 1.2},
+    "critical_high": 4.5
+  },
+  "pt": {
+    "canonical": "Prothrombin Time",
+    "aliases": ["pt", "prothrombin time"],
+    "unit": "sec",
+    "default": {"low": 11.0, "high": 13.5}
+  },
+  "aptt": {
+    "canonical": "aPTT",
+    "aliases": ["aptt", "ptt", "activated partial thromboplastin time"],
+    "unit": "sec",
+    "default": {"low": 25.0, "high": 35.0},
+    "critical_high": 70.0
+  },
+  "lipase": {
+    "canonical": "Serum Lipase",
+    "aliases": ["lipase", "serum lipase"],
+    "unit": "U/L",
+    "default": {"low": 10.0, "high": 60.0},
+    "critical_high": 180.0
+  },
+  "amylase": {
+    "canonical": "Serum Amylase",
+    "aliases": ["amylase", "serum amylase"],
+    "unit": "U/L",
+    "default": {"low": 30.0, "high": 110.0},
+    "critical_high": 330.0
+  },
+  "d_dimer": {
+    "canonical": "D-Dimer",
+    "aliases": ["d-dimer", "d dimer", "ddimer"],
+    "unit": "ug/mL",
+    "default": {"low": 0.0, "high": 0.5}
+  },
+  "uric_acid": {
+    "canonical": "Uric Acid",
+    "aliases": ["uric acid", "serum uric acid"],
+    "unit": "mg/dL",
+    "male": {"low": 3.4, "high": 7.0},
+    "female": {"low": 2.4, "high": 6.0},
+    "default": {"low": 2.5, "high": 7.0}
+  }
+}

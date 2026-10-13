@@ -1,0 +1,169 @@
+{
+  "status": "ok",
+  "total_images": 20,
+  "peaks_inside_mask": 15,
+  "hit_rate": 0.75,
+  "target_pathology": "Consolidation",
+  "details": [
+    {
+      "image_index": 1,
+      "side": "right",
+      "zone": "upper",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 2,
+      "side": "left",
+      "zone": "upper",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 3,
+      "side": "right",
+      "zone": "mid",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 4,
+      "side": "left",
+      "zone": "mid",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 5,
+      "side": "right",
+      "zone": "lower",
+      "peak_y": 0,
+      "peak_x": 0,
+      "inside_lung_mask": false
+    },
+    {
+      "image_index": 6,
+      "side": "left",
+      "zone": "lower",
+      "peak_y": 0,
+      "peak_x": 0,
+      "inside_lung_mask": false
+    },
+    {
+      "image_index": 7,
+      "side": "right",
+      "zone": "upper",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 8,
+      "side": "left",
+      "zone": "upper",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 9,
+      "side": "right",
+      "zone": "mid",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 10,
+      "side": "left",
+      "zone": "mid",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 11,
+      "side": "right",
+      "zone": "lower",
+      "peak_y": 0,
+      "peak_x": 0,
+      "inside_lung_mask": false
+    },
+    {
+      "image_index": 12,
+      "side": "left",
+      "zone": "lower",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 13,
+      "side": "right",
+      "zone": "upper",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 14,
+      "side": "left",
+      "zone": "upper",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 15,
+      "side": "right",
+      "zone": "mid",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 16,
+      "side": "left",
+      "zone": "mid",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 17,
+      "side": "right",
+      "zone": "lower",
+      "peak_y": 0,
+      "peak_x": 0,
+      "inside_lung_mask": false
+    },
+    {
+      "image_index": 18,
+      "side": "left",
+      "zone": "lower",
+      "peak_y": 0,
+      "peak_x": 0,
+      "inside_lung_mask": false
+    },
+    {
+      "image_index": 19,
+      "side": "right",
+      "zone": "upper",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    },
+    {
+      "image_index": 20,
+      "side": "left",
+      "zone": "upper",
+      "peak_y": 208,
+      "peak_x": 112,
+      "inside_lung_mask": true
+    }
+  ]
+}
