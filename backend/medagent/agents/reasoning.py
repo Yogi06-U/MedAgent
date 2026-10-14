@@ -50,42 +50,42 @@ CONDITIONS_CATALOG: Dict[str, Dict[str, Any]] = {
         "workup": ["Serum NT-proBNP or BNP", "Transthoracic echocardiogram", "Daily weight and fluid restriction monitoring"],
     },
     "Cardiomegaly": {
-        "symptoms": [r"\bhypertension\b", r"\bfatigue\b", r"\bdyspnea on exertion\b"],
+        "symptoms": [r"\bcardiomegaly\b", r"\benlarged heart\b", r"\bcardiothoracic ratio\b", r"\bdisplaced apex\b", r"\bdisplaced apical impulse\b", r"\bdyspnea on exertion\b"],
         "imaging": {"Cardiomegaly": 4.0},
         "labs": {},
         "against_imaging": [],
         "workup": ["12-lead electrocardiogram", "Transthoracic echocardiogram to assess chamber size", "Blood pressure log"],
     },
     "Acute Kidney Injury": {
-        "symptoms": [r"\boliguria\b", r"\banuria\b", r"\blethargy\b", r"\bnausea\b", r"\bdecreased urine\b", r"\bfluid overload\b"],
+        "symptoms": [r"\boliguria\b", r"\banuria\b", r"\bdecreased urine\b", r"\bacute kidney\b", r"\baki\b", r"\banuric\b", r"\boliguric\b", r"\bfluid overload\b"],
         "imaging": {},
         "labs": {"Renal Impairment": 4.0, "Hyperkalaemia": 2.5, "Metabolic Acidosis": 2.0},
         "against_imaging": [],
         "workup": ["Renal ultrasound to exclude hydronephrosis", "Urine electrolytes and fractional excretion of sodium", "Discontinue nephrotoxic agents"],
     },
     "Chronic Kidney Disease": {
-        "symptoms": [r"\bchronic kidney\b", r"\bckd\b", r"\bhypertension\b", r"\bdiabetes\b", r"\bnocturia\b", r"\bpruritus\b"],
+        "symptoms": [r"\bchronic kidney\b", r"\bckd\b", r"\bnocturia\b", r"\bpruritus\b", r"\begfr\b"],
         "imaging": {},
         "labs": {"Renal Impairment": 3.0, "Normocytic Anaemia": 1.5, "Hyperkalaemia": 1.5},
         "against_imaging": [],
         "workup": ["Spot urine albumin-to-creatinine ratio", "Serial serum creatinine tracking", "Nephrology referral"],
     },
     "Severe Hyperkalemia": {
-        "symptoms": [r"\bweakness\b", r"\bpalpitations\b", r"\bparesthesias\b", r"\bflaccid\b"],
+        "symptoms": [r"\bflaccid weakness\b", r"\bmuscle weakness\b", r"\bpeaked t[- ]waves?\b", r"\bhyperkalemia\b", r"\bhyperkalaemia\b", r"\bmissed.*dialysis\b", r"\bpalpitations\b", r"\bparesthesias\b"],
         "imaging": {},
         "labs": {"Hyperkalaemia": 4.5, "Renal Impairment": 2.0, "Metabolic Acidosis": 1.5},
         "against_imaging": [],
         "workup": ["Immediate 12-lead ECG for peaked T waves/conduction blocks", "Telemetry cardiac monitoring", "Discontinue ACE inhibitors, spironolactone, and NSAIDs"],
     },
     "Hypokalemia": {
-        "symptoms": [r"\bcramps\b", r"\bmuscle weakness\b", r"\bvomiting\b", r"\bdiarrhea\b", r"\bpolyuria\b"],
+        "symptoms": [r"\bhypokalemia\b", r"\bhypokalaemia\b", r"\bmuscle cramps\b", r"\bmuscle weakness\b", r"\bu[- ]waves?\b", r"\bfurosemide\b", r"\bloop diuretic\b"],
         "imaging": {},
         "labs": {"Hypokalaemia": 4.0},
         "against_imaging": [],
         "workup": ["Serum magnesium level", "12-lead ECG for U waves and ST changes", "Review diuretic regimen"],
     },
     "Hyponatremia": {
-        "symptoms": [r"\bconfusion\b", r"\blethargy\b", r"\bheadache\b", r"\bnausea\b", r"\bseizure\b", r"\bunsteady\b"],
+        "symptoms": [r"\bhyponatremia\b", r"\bhyponatraemia\b", r"\bconfusion\b", r"\blethargy\b", r"\bheadache\b", r"\bseizure\b", r"\bunsteady\b"],
         "imaging": {},
         "labs": {"Hyponatraemia": 4.0},
         "against_imaging": [],
@@ -106,21 +106,21 @@ CONDITIONS_CATALOG: Dict[str, Dict[str, Any]] = {
         "workup": ["Serum vitamin B12 and folate levels", "Serum methylmalonic acid and homocysteine", "Peripheral blood smear"],
     },
     "Normocytic Anemia of Chronic Disease": {
-        "symptoms": [r"\bchronic\b", r"\brheumatoid\b", r"\bmalignancy\b", r"\bautoimmune\b", r"\bweight loss\b"],
+        "symptoms": [r"\banemia of chronic\b", r"\banemia of inflammation\b", r"\brheumatoid\b", r"\bautoimmune flare\b", r"\bmalignancy\b", r"\bchronic inflammation\b", r"\bweight loss\b"],
         "imaging": {},
         "labs": {"Normocytic Anaemia": 3.0, "Raised Inflammatory Markers": 2.0},
         "against_imaging": [],
         "workup": ["Reticulocyte count", "Ferritin and transferrin saturation", "Underlying chronic disease evaluation"],
     },
     "Type 2 Diabetes Mellitus": {
-        "symptoms": [r"\bpolyuria\b", r"\bpolydipsia\b", r"\bpolyphagia\b", r"\bblurred vision\b", r"\bweight loss\b"],
+        "symptoms": [r"\bpolyuria\b", r"\bpolydipsia\b", r"\bpolyphagia\b", r"\bblurred vision\b", r"\bweight loss\b", r"\bhyperglycemia\b"],
         "imaging": {},
         "labs": {"Diabetic Range Glycemia": 4.0, "Pre-diabetic Range": 2.5, "Dyslipidaemia": 1.0},
         "against_imaging": [],
         "workup": ["Fasting lipid panel", "Spot urine microalbumin", "Diabetic dilated eye examination"],
     },
     "Diabetic Ketoacidosis": {
-        "symptoms": [r"\bkussmaul\b", r"\bfruity breath\b", r"\bvomi.*abdominal\b", r"\bdehydration\b", r"\baltered mental\b"],
+        "symptoms": [r"\bkussmaul\b", r"\bfruity breath\b", r"\bvomi.*abdominal\b", r"\bdehydration\b", r"\baltered mental\b", r"\btype 1 diabetes\b"],
         "imaging": {},
         "labs": {"Hyperglycaemia with Low Bicarbonate (DKA Pattern)": 5.0, "Metabolic Acidosis": 3.0, "Diabetic Range Glycemia": 2.0},
         "against_imaging": [],
@@ -169,7 +169,7 @@ CONDITIONS_CATALOG: Dict[str, Dict[str, Any]] = {
         "workup": ["CT Pulmonary Angiography (CTPA)", "D-dimer assay if low-intermediate probability", "Lower extremity venous duplex ultrasound"],
     },
     "Sepsis / Severe Systemic Infection": {
-        "symptoms": [r"\bseptic\b", r"\bhypotension\b", r"\btachycardia\b", r"\bfever\b", r"\bhypothermia\b", r"\bshivering\b", r"\baltered\b"],
+        "symptoms": [r"\bseptic\b", r"\bsepsis\b", r"\bsevere hypotension\b", r"\bhypotension\b", r"\bseptic shock\b", r"\brigors?\b", r"\bshivering\b", r"\bhypothermia\b", r"\btachycardia\b"],
         "imaging": {"Consolidation": 2.0},
         "labs": {"Raised Lactate": 4.0, "Leukocytosis with Neutrophilia": 2.5, "Leukopenia": 2.5, "Raised Inflammatory Markers": 2.5, "Renal Impairment": 2.0},
         "against_imaging": [],
@@ -183,20 +183,373 @@ CONDITIONS_CATALOG: Dict[str, Dict[str, Any]] = {
         "workup": ["Arterial blood gas to check for CO2 retention", "Inhaled bronchodilators with spacer/nebulizer", "Oral corticosteroid burst"],
     },
     "Hypercalcemia": {
-        "symptoms": [r"\bconstipation\b", r"\bbone pain\b", r"\bkidney stones\b", r"\bpolyuria\b", r"\bdepression\b"],
+        "symptoms": [r"\bhypercalcemia\b", r"\bhypercalcaemia\b", r"\bbone pain\b", r"\bkidney stones\b", r"\bnephrolithiasis\b", r"\bshortened qt\b"],
         "imaging": {},
         "labs": {"Hypercalcaemia": 4.5},
         "against_imaging": [],
         "workup": ["Intact parathyroid hormone (iPTH)", "PTH-related peptide (PTHrP) and 25-OH Vitamin D", "Aggressive isotonic IV saline hydration"],
     },
     "Metabolic Acidosis": {
-        "symptoms": [r"\btachypnea\b", r"\bkussmaul\b", r"\blethargy\b", r"\bvomiting\b", r"\bconfusion\b"],
+        "symptoms": [r"\bkussmaul\b", r"\bacidosis\b", r"\bacidotic\b", r"\bhigh anion gap\b", r"\blow bicarbonate\b", r"\btachypnea\b"],
         "imaging": {},
         "labs": {"Metabolic Acidosis": 4.0, "Raised Lactate": 2.5, "Renal Impairment": 2.0},
         "against_imaging": [],
         "workup": ["Calculate serum anion gap [Na - (Cl + HCO3)]", "Arterial blood gas for pH and pCO2", "Treat underlying etiology (sepsis, DKA, uremia, toxin)"],
     },
 };
+
+# Medically coherent secondary differentials by condition
+CONTEXTUAL_SECONDARY_DIFFERENTIALS: Dict[str, Dict[str, Any]] = {
+    # Respiratory
+    "Community-Acquired Pneumonia": {
+        "condition": "Acute Viral Bronchitis / Atypical Infection",
+        "supporting": ["Respiratory presentation", "Cough and dyspnea"],
+        "against": "Lacks dense focal lobar consolidation",
+        "workup": ["Respiratory viral multiplex PCR", "Repeat chest radiograph in 6 weeks", "Pulse oximetry"],
+    },
+    "Pleural Effusion": {
+        "condition": "Congestive Heart Failure / Transudative Effusion",
+        "supporting": ["Decreased breath sounds", "Pleuritic discomfort"],
+        "against": "Peripheral dependent edema absent",
+        "workup": ["Diagnostic thoracentesis with Light's criteria", "Transthoracic echocardiogram", "Serum NT-proBNP"],
+    },
+    "Pneumothorax": {
+        "condition": "Acute Pleuritis / Musculoskeletal Chest Pain",
+        "supporting": ["Acute pleuritic chest discomfort", "Dyspnea"],
+        "against": "Mediastinal deviation absent",
+        "workup": ["Repeat upright chest radiograph", "Continuous pulse oximetry", "Electrocardiogram"],
+    },
+    "COPD Acute Exacerbation": {
+        "condition": "Acute Bronchitis / Tracheobronchitis",
+        "supporting": ["Wheezing and dyspnea", "Cough"],
+        "against": "Focal bacterial consolidation absent",
+        "workup": ["Spirometry post-stabilization", "Peak expiratory flow measurement", "Chest radiograph"],
+    },
+    # Cardiac
+    "Acute Myocardial Infarction / ACS": {
+        "condition": "Unstable Angina / Acute Coronary Syndrome",
+        "supporting": ["Anginal chest discomfort", "Diaphoresis and radiation"],
+        "against": "Persistent ST elevation absent",
+        "workup": ["Serial high-sensitivity troponins at 0h and 2h", "Serial 12-lead ECGs", "Urgent cardiology evaluation"],
+    },
+    "Congestive Heart Failure / Pulmonary Edema": {
+        "condition": "Acute Exacerbation of Diastolic Dysfunction",
+        "supporting": ["Fluid overload features", "Orthopnea and dyspnea"],
+        "against": "Acute valvular regurgitation murmur absent",
+        "workup": ["Serum NT-proBNP", "Transthoracic echocardiogram", "Renal function panel"],
+    },
+    "Cardiomegaly": {
+        "condition": "Hypertensive Heart Disease / Left Ventricular Hypertrophy",
+        "supporting": ["Cardiomegaly on imaging", "Dyspnea on exertion"],
+        "against": "Pericardial effusion absent",
+        "workup": ["12-lead ECG", "Transthoracic echocardiogram", "Ambulatory blood pressure monitoring"],
+    },
+    # Renal & Electrolytes
+    "Acute Kidney Injury": {
+        "condition": "Prerenal Azotemia / Dehydration",
+        "supporting": ["Decreased urine output", "Elevated renal markers"],
+        "against": "Active urinary sediment casts absent",
+        "workup": ["Fractional excretion of sodium (FeNa)", "Renal ultrasound", "Fluid challenge responsiveness"],
+    },
+    "Chronic Kidney Disease": {
+        "condition": "Hypertensive Nephrosclerosis",
+        "supporting": ["Chronically elevated creatinine", "Hypertension history"],
+        "against": "Active glomerulonephritis serologies absent",
+        "workup": ["Urine albumin-to-creatinine ratio", "Renal duplex ultrasound", "Nephrology consultation"],
+    },
+    "Severe Hyperkalemia": {
+        "condition": "Pseudohyperkalemia / Hemolyzed Sample Artifact",
+        "supporting": ["Elevated serum potassium", "Neuromuscular symptoms"],
+        "against": "Peaked T waves on baseline ECG absent",
+        "workup": ["Immediate unhemolyzed repeat stat potassium", "Stat 12-lead ECG", "Discontinue potassium supplements"],
+    },
+    "Hypokalemia": {
+        "condition": "Gastrointestinal or Renal Potassium Wasting",
+        "supporting": ["Hypokalemia", "Muscle weakness or cramps"],
+        "against": "Hyperaldosteronism features absent",
+        "workup": ["Urine potassium-to-creatinine ratio", "Serum magnesium", "Review diuretic regimen"],
+    },
+    "Hyponatremia": {
+        "condition": "Syndrome of Inappropriate ADH (SIADH) vs Hypovolemia",
+        "supporting": ["Hyponatremia", "Neurological symptoms"],
+        "against": "Severe volume depletion orthostasis absent",
+        "workup": ["Serum and urine osmolality", "Urine sodium concentration", "Thyroid and adrenal function tests"],
+    },
+    # Endocrine & Metabolic
+    "Diabetic Ketoacidosis": {
+        "condition": "Hyperosmolar Hyperglycemic State (HHS)",
+        "supporting": ["Marked hyperglycemia", "Dehydration and altered mentation"],
+        "against": "Profound hyperosmolality without acidosis absent",
+        "workup": ["Serum beta-hydroxybutyrate", "Arterial/venous blood gas", "Serum osmolality"],
+    },
+    "Type 2 Diabetes Mellitus": {
+        "condition": "Impaired Fasting Glucose / Metabolic Syndrome",
+        "supporting": ["Hyperglycemia", "Polyuria and polydipsia"],
+        "against": "Diabetic ketoacidosis features absent",
+        "workup": ["Fasting plasma glucose", "HbA1c confirmation", "Lipid panel"],
+    },
+    "Hypoglycemia": {
+        "condition": "Drug-Induced Hypoglycemia / Autonomic Dysregulation",
+        "supporting": ["Autonomic and neuroglycopenic symptoms", "Low blood glucose"],
+        "against": "Insulinoma triad documentation absent",
+        "workup": ["Immediate capillary glucose test", "Medication reconciliation", "Serum C-peptide and insulin level"],
+    },
+    "Hypercalcemia": {
+        "condition": "Primary Hyperparathyroidism vs Malignancy",
+        "supporting": ["Elevated serum calcium", "Bone pain or nephrolithiasis"],
+        "against": "Acute hypervitaminosis D absent",
+        "workup": ["Intact parathyroid hormone (iPTH)", "PTH-related peptide (PTHrP)", "25-OH Vitamin D"],
+    },
+    "Metabolic Acidosis": {
+        "condition": "High Anion Gap vs Non-Anion Gap Metabolic Acidosis",
+        "supporting": ["Low bicarbonate", "Tachypnea and compensatory hyperventilation"],
+        "against": "Severe respiratory alkalosis absent",
+        "workup": ["Serum electrolytes for anion gap calculation", "Arterial blood gas", "Serum lactate and ketones"],
+    },
+    # GI & Hepatic
+    "Acute Pancreatitis": {
+        "condition": "Acute Cholecystitis / Biliary Colic",
+        "supporting": ["Severe abdominal pain", "Nausea and vomiting"],
+        "against": "Murphy's sign and gallbladder wall thickening absent",
+        "workup": ["Serum lipase and amylase", "Abdominal ultrasound", "Liver function panel"],
+    },
+    "Acute Hepatocellular Injury": {
+        "condition": "Toxic / Drug-Induced Liver Injury (DILI)",
+        "supporting": ["Transaminitis", "Jaundice and hepatomegaly"],
+        "against": "Biliary duct dilatation absent",
+        "workup": ["Viral hepatitis panel (A, B, C, E)", "Toxicology screen including acetaminophen", "Abdominal ultrasound"],
+    },
+    "Cholestasis / Obstructive Biliary Disease": {
+        "condition": "Choledocholithiasis / Biliary Stricture",
+        "supporting": ["Elevated alkaline phosphatase and bilirubin", "Dark urine and pruritus"],
+        "against": "Ascending cholangitis triad (fever) absent",
+        "workup": ["Right upper quadrant ultrasound", "MRCP", "Serum lipase"],
+    },
+    # Hematology
+    "Microcytic Iron Deficiency Anemia": {
+        "condition": "Thalassemia Minor / Anemia of Chronic Disease",
+        "supporting": ["Microcytic anemia", "Pallor and fatigue"],
+        "against": "Target cells or basophilic stippling predominant absent",
+        "workup": ["Serum ferritin and iron saturation", "Hemoglobin electrophoresis", "Fecal occult blood test"],
+    },
+    "Macrocytic / Megaloblastic Anemia": {
+        "condition": "Vitamin B12 or Folate Deficiency Anemia",
+        "supporting": ["Macrocytic anemia", "Neuropathy and ataxia"],
+        "against": "Myelodysplastic dysplastic blasts absent",
+        "workup": ["Serum B12 and red cell folate", "Methylmalonic acid", "Peripheral blood smear"],
+    },
+    "Normocytic Anemia of Chronic Disease": {
+        "condition": "Anemia of Chronic Kidney Disease or Inflammation",
+        "supporting": ["Normocytic anemia", "Chronic inflammatory condition"],
+        "against": "Acute hemolytic anemia features absent",
+        "workup": ["Reticulocyte production index", "Ferritin and transferrin saturation", "Serum erythropoietin"],
+    },
+    # Systemic & Vascular
+    "Pulmonary Embolism": {
+        "condition": "Acute Pleurisy / Musculoskeletal Chest Pain",
+        "supporting": ["Pleuritic chest pain", "Tachypnea and dyspnea"],
+        "against": "Deep vein thrombosis on venous ultrasound absent",
+        "workup": ["CT Pulmonary Angiogram (CTPA)", "Quantitative D-dimer", "12-lead ECG"],
+    },
+    "Sepsis / Severe Systemic Infection": {
+        "condition": "Systemic Inflammatory Response Syndrome (SIRS) of Non-Infectious Origin",
+        "supporting": ["Tachycardia and hypotension", "Elevated inflammatory markers"],
+        "against": "Identified positive microbial source culture absent",
+        "workup": ["Blood cultures x2", "Serial serum lactate", "Broad-spectrum empiric antimicrobial coverage"],
+    },
+}
+
+# Discriminating clinical concept keywords for grounded RAG evidence matching
+CONDITION_CONCEPT_KEYWORDS: Dict[str, List[str]] = {
+    "Community-Acquired Pneumonia": ["pneumonia", "consolidation", "infiltrate", "sputum", "bronchial"],
+    "Pleural Effusion": ["pleural effusion", "effusion", "thoracentesis", "light's criteria", "pleural fluid"],
+    "Pneumothorax": ["pneumothorax", "pleural air", "chest tube", "tension pneumothorax"],
+    "Congestive Heart Failure / Pulmonary Edema": ["heart failure", "pulmonary edema", "chf", "bnp", "cardiomegaly", "orthopnea"],
+    "Cardiomegaly": ["cardiomegaly", "cardiothoracic ratio", "enlarged heart", "ventricular hypertrophy"],
+    "Acute Kidney Injury": ["acute kidney injury", "aki", "creatinine", "oliguria", "prerenal"],
+    "Chronic Kidney Disease": ["chronic kidney disease", "ckd", "egfr", "nephropathy", "uremia"],
+    "Severe Hyperkalemia": ["hyperkalemia", "hyperkalaemia", "potassium", "peaked t", "calcium gluconate"],
+    "Hypokalemia": ["hypokalemia", "hypokalaemia", "potassium", "u waves"],
+    "Hyponatremia": ["hyponatremia", "hyponatraemia", "sodium", "siadh", "osmolality"],
+    "Microcytic Iron Deficiency Anemia": ["iron deficiency", "ferritin", "microcytic", "transferrin", "iron"],
+    "Macrocytic / Megaloblastic Anemia": ["megaloblastic", "macrocytic", "vitamin b12", "folate", "homocysteine"],
+    "Normocytic Anemia of Chronic Disease": ["anemia of chronic", "anemia of inflammation", "normocytic", "hepcidin"],
+    "Type 2 Diabetes Mellitus": ["diabetes mellitus", "hyperglycemia", "glycemia", "hba1c", "metformin", "diabetic"],
+    "Diabetic Ketoacidosis": ["diabetic ketoacidosis", "dka", "ketones", "ketoacidosis", "beta-hydroxybutyrate"],
+    "Hypoglycemia": ["hypoglycemia", "hypoglycaemia", "blood glucose", "dextrose", "hypoglycemic"],
+    "Acute Hepatocellular Injury": ["hepatocellular", "transaminitis", "hepatitis", "alt", "ast", "liver injury"],
+    "Cholestasis / Obstructive Biliary Disease": ["cholestasis", "cholestatic", "biliary", "alkaline phosphatase", "bilirubin", "gallstones"],
+    "Acute Pancreatitis": ["pancreatitis", "lipase", "amylase", "epigastric", "pancreatic"],
+    "Acute Myocardial Infarction / ACS": ["myocardial infarction", "troponin", "coronary syndrome", "stemi", "nstemi", "angina"],
+    "Pulmonary Embolism": ["pulmonary embolism", "d-dimer", "ctpa", "thromboembolism", "deep vein thrombosis"],
+    "Sepsis / Severe Systemic Infection": ["sepsis", "septic", "lactate", "bacteremia", "qsofa"],
+    "COPD Acute Exacerbation": ["copd", "chronic obstructive", "bronchodilator", "emphysema", "bronchitis"],
+    "Hypercalcemia": ["hypercalcemia", "hypercalcaemia", "calcium", "parathyroid", "pth"],
+    "Metabolic Acidosis": ["metabolic acidosis", "anion gap", "bicarbonate", "acidemia"],
+}
+
+# Essential cardinal diagnostic requirements for each condition to prevent spurious differential inclusion
+CARDINAL_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
+    "Severe Hyperkalemia": {
+        "lab_patterns": ["Hyperkalaemia", "Severe Hyperkalaemia"],
+        "symptoms": [r"\bhyperkalemia\b", r"\bhyperkalaemia\b", r"\bflaccid\b", r"\bpeaked t[- ]waves?\b"],
+    },
+    "Hypokalemia": {
+        "lab_patterns": ["Hypokalaemia"],
+        "symptoms": [r"\bhypokalemia\b", r"\bhypokalaemia\b", r"\bu[- ]waves?\b", r"\bfurosemide\b"],
+    },
+    "Hyponatremia": {
+        "lab_patterns": ["Hyponatraemia"],
+        "symptoms": [r"\bhyponatremia\b", r"\bhyponatraemia\b"],
+    },
+    "Hypercalcemia": {
+        "lab_patterns": ["Hypercalcaemia"],
+        "symptoms": [r"\bhypercalcemia\b", r"\bhypercalcaemia\b", r"\bbone pain\b", r"\bkidney stones\b"],
+    },
+    "Hypoglycemia": {
+        "lab_patterns": ["Hypoglycaemia"],
+        "symptoms": [r"\bhypoglycemia\b", r"\bhypoglycaemia\b"],
+    },
+    "Diabetic Ketoacidosis": {
+        "lab_patterns": ["Hyperglycaemia with Low Bicarbonate (DKA Pattern)", "Metabolic Acidosis"],
+        "symptoms": [r"\bkussmaul\b", r"\bfruity breath\b", r"\bdka\b", r"\bdiabetic ketoacidosis\b"],
+    },
+    "Type 2 Diabetes Mellitus": {
+        "lab_patterns": ["Diabetic Range Glycemia", "Pre-diabetic Range"],
+        "symptoms": [r"\bdiabetes\b", r"\bdiabetic\b", r"\bhyperglycemia\b", r"\bpolyuria\b"],
+    },
+    "Normocytic Anemia of Chronic Disease": {
+        "lab_patterns": ["Normocytic Anaemia"],
+        "symptoms": [r"\banemia of chronic\b", r"\banemia of inflammation\b", r"\brheumatoid\b", r"\bautoimmune\b"],
+    },
+    "Microcytic Iron Deficiency Anemia": {
+        "lab_patterns": ["Microcytic Anaemia"],
+        "symptoms": [r"\biron deficiency\b", r"\bferritin\b", r"\bpica\b", r"\bmenorrhagia\b"],
+    },
+    "Macrocytic / Megaloblastic Anemia": {
+        "lab_patterns": ["Macrocytic Anaemia", "Vitamin Deficiencies"],
+        "symptoms": [r"\bmacrocytic\b", r"\bmegaloblastic\b", r"\bglossitis\b"],
+    },
+    "Acute Kidney Injury": {
+        "lab_patterns": ["Renal Impairment"],
+        "symptoms": [r"\boliguria\b", r"\banuria\b", r"\bdecreased urine\b", r"\baki\b", r"\bacute kidney\b"],
+    },
+    "Chronic Kidney Disease": {
+        "lab_patterns": ["Renal Impairment"],
+        "symptoms": [r"\bchronic kidney\b", r"\bckd\b", r"\begfr\b"],
+    },
+    "Acute Hepatocellular Injury": {
+        "lab_patterns": ["Hepatocellular Pattern"],
+        "symptoms": [r"\bjaundice\b", r"\bhepatomegaly\b", r"\bhepatitis\b"],
+    },
+    "Cholestasis / Obstructive Biliary Disease": {
+        "lab_patterns": ["Cholestatic Pattern"],
+        "symptoms": [r"\bdark urine\b", r"\bpale stool\b", r"\bicterus\b", r"\bgallstones\b"],
+    },
+    "Acute Pancreatitis": {
+        "symptoms": [r"\bepigastric pain\b", r"\bradiat.*back\b", r"\bpancreatitis\b", r"\blipase\b"],
+    },
+    "Acute Myocardial Infarction / ACS": {
+        "lab_patterns": ["Raised Troponin"],
+        "symptoms": [r"\bcrushing.*chest\b", r"\bpressure.*chest\b", r"\bradiat.*arm\b", r"\bradiat.*jaw\b", r"\bangina\b", r"\bmyocardial infarction\b"],
+    },
+    "Cardiomegaly": {
+        "imaging": ["Cardiomegaly"],
+        "symptoms": [r"\bcardiomegaly\b", r"\benlarged heart\b", r"\bcardiothoracic ratio\b"],
+    },
+    "Pneumothorax": {
+        "imaging": ["Pneumothorax"],
+        "symptoms": [r"\bsudden.*chest pain\b", r"\bhyperresonance\b", r"\bpneumothorax\b"],
+    },
+    "Pleural Effusion": {
+        "imaging": ["Effusion"],
+        "symptoms": [r"\bdullness\b", r"\bdecreased breath sounds\b", r"\bpleural effusion\b"],
+    },
+    "COPD Acute Exacerbation": {
+        "symptoms": [r"\bcopd\b", r"\bwheezing\b", r"\bbarrel chest\b", r"\bsmoking\b", r"\bchronic bronchitis\b", r"\bemphysema\b"],
+    },
+    "Community-Acquired Pneumonia": {
+        "imaging": ["Consolidation", "Infiltration", "Pneumonia"],
+        "symptoms": [r"\bcough\b", r"\bsputum\b", r"\bcrackles\b", r"\brales\b", r"\bpneumonia\b"],
+    },
+    "Pulmonary Embolism": {
+        "symptoms": [r"\bpleuritic.*chest\b", r"\bhemoptysis\b", r"\bdvt\b", r"\bleg swelling\b", r"\bpulmonary embolism\b"],
+    },
+    "Congestive Heart Failure / Pulmonary Edema": {
+        "imaging": ["Cardiomegaly", "Edema"],
+        "symptoms": [r"\borthopnea\b", r"\bpnd\b", r"\bparoxysmal nocturnal\b", r"\bjvd\b", r"\bheart failure\b"],
+    },
+    "Sepsis / Severe Systemic Infection": {
+        "lab_patterns": ["Raised Lactate"],
+        "symptoms": [r"\bseptic\b", r"\bsepsis\b", r"\bsevere hypotension\b", r"\bseptic shock\b", r"\brigors?\b"],
+    },
+    "Hypercalcemia": {
+        "lab_patterns": ["Hypercalcaemia"],
+        "symptoms": [r"\bhypercalcemia\b", r"\bhypercalcaemia\b", r"\bbone pain\b", r"\bkidney stones\b"],
+    },
+    "Metabolic Acidosis": {
+        "lab_patterns": ["Metabolic Acidosis"],
+        "symptoms": [r"\bkussmaul\b", r"\bacidosis\b", r"\bacidemia\b"],
+    },
+}
+
+
+NEGATION_PATTERNS: List[str] = [
+    r"\bno\b",
+    r"\bdenies\b",
+    r"\bwithout\b",
+    r"\bfree of\b",
+    r"\babsence of\b",
+    r"\bnegative for\b",
+    r"\bnot\b",
+    r"\bunlikely\b",
+    r"\brules? out\b",
+    r"\bno signs of\b",
+    r"\bno evidence of\b",
+]
+
+
+def is_symptom_negated(text: str, match_start: int) -> bool:
+    """Check if a symptom in text is preceded by a negation phrase within 50 characters."""
+    window_start = max(0, match_start - 50)
+    preceding_window = text[window_start:match_start].lower()
+    last_punct = max(preceding_window.rfind("."), preceding_window.rfind(";"), preceding_window.rfind("\n"))
+    if last_punct != -1:
+        preceding_window = preceding_window[last_punct:]
+    for neg_pat in NEGATION_PATTERNS:
+        if re.search(neg_pat, preceding_window):
+            return True
+    return False
+
+
+def _check_cardinal_requirement(
+    cond_name: str,
+    text_lower: str,
+    lab_pattern_names: Set[str],
+    imaging_findings_dict: Dict[str, float],
+) -> bool:
+    """Ensure a proposed condition is anchored in essential clinical criteria."""
+    reqs = CARDINAL_REQUIREMENTS.get(cond_name)
+    if not reqs:
+        return True
+
+    # 1. Check cardinal lab pattern
+    for pat in reqs.get("lab_patterns", []):
+        if any(pat.lower() in p.lower() or p.lower() in pat.lower() for p in lab_pattern_names):
+            return True
+
+    # 2. Check cardinal imaging finding (requires clinically elevated probability >= 0.60)
+    for img_term in reqs.get("imaging", []):
+        if any(img_term.lower() in f.lower() and prob >= 0.60 for f, prob in imaging_findings_dict.items()):
+            return True
+
+    # 3. Check cardinal symptom pattern (must not be negated)
+    for sym_pat in reqs.get("symptoms", []):
+        for m in re.finditer(sym_pat, text_lower):
+            if not is_symptom_negated(text_lower, m.start()):
+                return True
+
+    return False
 
 
 def run_rule_engine(
@@ -222,23 +575,29 @@ def run_rule_engine(
     scored_conditions: List[Dict[str, Any]] = []
 
     for cond_name, rules in CONDITIONS_CATALOG.items():
+        # Cardinal diagnostic gate: ensure anchor finding is present
+        if not _check_cardinal_requirement(cond_name, text_lower, lab_pattern_names, imaging_findings_dict):
+            continue
+
         score = 0.0
         supporting_items: List[str] = []
         data_sources: Set[str] = set()
 
-        # 1. Symptom matches in text
+        # 1. Symptom matches in text (must not be negated)
         for pat in rules.get("symptoms", []):
-            if re.search(pat, text_lower):
-                score += 1.0
-                data_sources.add("notes")
-                matched_word = re.findall(pat, text_lower)[0]
-                if matched_word not in supporting_items:
-                    supporting_items.append(matched_word.strip())
+            for m in re.finditer(pat, text_lower):
+                if not is_symptom_negated(text_lower, m.start()):
+                    matched_word = m.group(0).strip()
+                    if matched_word not in supporting_items:
+                        score += 1.0
+                        data_sources.add("notes")
+                        supporting_items.append(matched_word)
+                    break
 
-        # 2. Imaging matches
+        # 2. Imaging matches (requires clinically elevated probability >= 0.60)
         for img_finding, weight in rules.get("imaging", {}).items():
             for detected_finding, prob in imaging_findings_dict.items():
-                if img_finding.lower() in detected_finding.lower():
+                if img_finding.lower() in detected_finding.lower() and prob >= 0.60:
                     pts = weight * prob
                     score += pts
                     data_sources.add("imaging")
@@ -255,7 +614,7 @@ def run_rule_engine(
         # Check discordant / against findings
         against_notes = []
         for ag_img in rules.get("against_imaging", []):
-            if ag_img in imaging_findings_dict:
+            if any(ag_img.lower() in k.lower() and prob >= 0.50 for k, prob in imaging_findings_dict.items()):
                 against_notes.append(f"Presence of {ag_img}")
 
         if score > 0.8:
@@ -273,16 +632,46 @@ def run_rule_engine(
 
     # Must provide 2 to 5 differentials
     top_items = scored_conditions[:5]
-    if len(top_items) < 2:
-        # Add fallback default if sparse
-        if not any(item["condition"] == "Acute Viral Respiratory Infection" for item in top_items):
+    if not top_items:
+        # Case is clinically unremarkable / normal evaluation
+        top_items = [
+            {
+                "condition": "No Acute Cardiopulmonary Process Identified",
+                "score": 3.5,
+                "sources_count": 2,
+                "supporting": ["Clinical presentation unremarkable", "Absence of acute abnormal findings"],
+                "against": "",
+                "workup": ["Routine preventative health maintenance", "Return precautions as clinically indicated"],
+            },
+            {
+                "condition": "Preventative Health Maintenance / Baseline Normal",
+                "score": 2.0,
+                "sources_count": 1,
+                "supporting": ["Baseline vital signs and clinical examination"],
+                "against": "",
+                "workup": ["Age-appropriate routine screening", "Lifestyle counseling"],
+            },
+        ]
+    elif len(top_items) < 2:
+        top_name = top_items[0]["condition"]
+        fallback_entry = CONTEXTUAL_SECONDARY_DIFFERENTIALS.get(top_name)
+        if fallback_entry and not any(item["condition"] == fallback_entry["condition"] for item in top_items):
             top_items.append({
-                "condition": "Acute Viral Respiratory Infection",
+                "condition": fallback_entry["condition"],
                 "score": 1.0,
                 "sources_count": 1,
-                "supporting": ["Clinical presentation"],
-                "against": "Focal bacterial consolidation absent",
-                "workup": ["Supportive care", "Symptomatic treatment"],
+                "supporting": fallback_entry.get("supporting", ["Clinical presentation"]),
+                "against": fallback_entry.get("against", ""),
+                "workup": fallback_entry.get("workup", ["Clinical observation", "Follow-up monitoring"]),
+            })
+        elif not any(item["condition"] == "Preventative Health Maintenance" for item in top_items):
+            top_items.append({
+                "condition": "Preventative Health Maintenance",
+                "score": 1.0,
+                "sources_count": 1,
+                "supporting": ["Clinical observation"],
+                "against": "",
+                "workup": ["Supportive care", "Routine monitoring"],
             })
 
     # Likelihood assignment:
@@ -302,12 +691,16 @@ def run_rule_engine(
         else:
             likelihood = "low"
 
-        # Match evidence citations
+        # Match evidence citations strictly using clinical concept keywords
         cited_ids: List[str] = []
-        cond_words = set(re.findall(r"\w+", item["condition"].lower()))
+        concept_terms = CONDITION_CONCEPT_KEYWORDS.get(item["condition"], [])
+        if not concept_terms:
+            stop_words = {"acute", "chronic", "severe", "disease", "disorder", "syndrome", "type", "with", "without", "and", "or", "of", "in", "the", "a", "an", "pattern", "injury", "failure", "edema", "infection"}
+            concept_terms = [w for w in re.findall(r"\w+", item["condition"].lower()) if w not in stop_words and len(w) > 3]
+
         for ev in available_citations:
-            ev_words = set(re.findall(r"\w+", (ev.source + " " + ev.section + " " + ev.passage).lower()))
-            if len(cond_words.intersection(ev_words)) >= 1:
+            ev_corpus = f"{ev.source} {ev.section} {ev.passage}".lower()
+            if any(kw in ev_corpus for kw in concept_terms):
                 cited_ids.append(ev.id)
                 if len(cited_ids) >= 2:
                     break
@@ -329,11 +722,13 @@ def run_rule_engine(
 
     # Synthesis summary (<= 4 sentences)
     top_cond = differentials[0].condition
+    top_findings = differentials[0].supporting_findings[:3]
+    findings_clause = f" including {', '.join(top_findings)}" if top_findings else ""
     summary_sentences = [
-        f"Patient evaluation demonstrates clinical features consistent with {top_cond}.",
-        f"Diagnostic synthesis is supported by {len(differentials[0].supporting_findings)} key multimodal findings.",
+        f"Patient clinical evaluation demonstrates features consistent with {top_cond}.",
+        f"Diagnostic synthesis is supported by key multimodal findings{findings_clause}.",
         f"Differential considerations include {', '.join([d.condition for d in differentials[1:3]])}." if len(differentials) > 1 else "",
-        "Diagnostic workup and clinical monitoring are indicated to confirm etiology and guide definitive management.",
+        "Targeted diagnostic workup and serial clinical monitoring are recommended to confirm etiology and guide definitive management.",
     ]
     summary = " ".join([s for s in summary_sentences if s])
 
@@ -346,16 +741,19 @@ def run_rule_engine(
             if len(combined_workup) >= 4:
                 break
 
-    # Red flags
+    # Red flags: require high/moderate likelihood or verified objective lab/imaging alert
+    high_mod_conditions = {d.condition for d in differentials if d.likelihood in ("high", "moderate")}
     red_flags = []
-    if "Severe Hyperkalemia" in [d.condition for d in differentials]:
+    if "Severe Hyperkalemia" in high_mod_conditions or any("hyperkalaemia" in p.lower() or "hyperkalemia" in p.lower() for p in lab_pattern_names):
         red_flags.append("Critical hyperkalemia with lethal arrhythmia risk. Urgent ECG and stabilization required.")
-    if "Diabetic Ketoacidosis" in [d.condition for d in differentials]:
+    if "Diabetic Ketoacidosis" in high_mod_conditions or any("dka" in p.lower() for p in lab_pattern_names):
         red_flags.append("Potential diabetic ketoacidosis with metabolic acidosis requiring immediate resuscitation.")
-    if "Pneumothorax" in [d.condition for d in differentials]:
+    if "Pneumothorax" in high_mod_conditions or any("pneumothorax" in k.lower() and prob >= 0.70 for k, prob in imaging_findings_dict.items()):
         red_flags.append("Possible pneumothorax; evaluate immediately for tension signs and acute decompensation.")
-    if any("troponin" in sf.lower() for d in differentials for sf in d.supporting_findings):
+    if "Acute Myocardial Infarction / ACS" in high_mod_conditions or any("troponin" in sf.lower() for d in differentials for sf in d.supporting_findings):
         red_flags.append("Myocardial necrosis marker elevation; evaluate for acute coronary syndrome.")
+    if "Pulmonary Embolism" in high_mod_conditions:
+        red_flags.append("High-risk pulmonary embolism suspected; evaluate hemodynamic stability and consider urgent CTPA.")
 
     return ClinicalDraft(
         summary=summary,

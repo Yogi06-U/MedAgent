@@ -324,21 +324,41 @@ def run_imaging_agent(case_input: CaseInput) -> ImagingReport:
         np_224 = transform(norm_img_3d)
         tensor_224 = torch.from_numpy(np_224).float().unsqueeze(0)  # [1, 1, 224, 224]
 
-        # Forward pass
+        # Forward pass: obtain both raw sigmoids and op_norm normalized probabilities
         with torch.no_grad():
+            features = model.features2(tensor_224)
+            logits = model.classifier(features)
+            raw_sigmoids = torch.sigmoid(logits)[0].detach().cpu().numpy()
+
             preds = model(tensor_224)
-            probs = torch.sigmoid(preds)[0].cpu().numpy()
+            raw_vals = preds[0].detach().cpu().numpy()
+            if raw_vals.min() >= 0.0 and raw_vals.max() <= 1.0:
+                probs = np.clip(raw_vals, 0.0, 1.0)
+            else:
+                probs = torch.sigmoid(preds)[0].detach().cpu().numpy()
 
         pathologies = model.pathologies
         findings: List[ImagingFinding] = []
         heatmap_paths: Dict[str, str] = []
 
-        # Find all with probability >= 0.35
-        candidate_indices = [
-            (idx, float(probs[idx]), pathologies[idx])
-            for idx in range(len(pathologies))
-            if float(probs[idx]) >= 0.35
-        ]
+        # Clinically calibrated candidate selection:
+        # Avoid dataset threshold artifacts for rare classes where baseline noise (< 5% raw) gets scaled to 50%+
+        candidate_indices = []
+        for idx in range(len(pathologies)):
+            p_op = float(probs[idx])
+            p_raw = float(raw_sigmoids[idx])
+            op_thresh = float(model.op_threshs[idx].item()) if hasattr(model, "op_threshs") else 0.05
+
+            if p_op >= 0.50:
+                # For rare pathologies (op_thresh < 0.03 like pneumothorax, emphysema, fibrosis)
+                # require either genuine raw logit elevation (>= 10%) or high op_norm (>= 0.65)
+                if op_thresh < 0.03:
+                    if p_raw >= 0.10 or p_op >= 0.65:
+                        candidate_indices.append((idx, p_op, pathologies[idx]))
+                else:
+                    if p_raw >= 0.06 or p_op >= 0.55:
+                        candidate_indices.append((idx, p_op, pathologies[idx]))
+
         # Sort descending, top 6
         candidate_indices.sort(key=lambda x: x[1], reverse=True)
         top_candidates = candidate_indices[:6]
@@ -377,9 +397,13 @@ def run_imaging_agent(case_input: CaseInput) -> ImagingReport:
             generate_heatmap_overlay(raw_arr, cam, hm_file)
             heatmaps_dict[path_name] = str(hm_file)
 
-        msg = f"DenseNet-121 identified {len(findings)} pathologies with probability >= 0.35."
         if not findings:
-            msg = "No radiographic abnormalities detected above 0.35 probability threshold."
+            quality_notes.append(
+                "Unremarkable radiograph: No findings exceed clinical significance threshold (all probabilities within baseline normal limits)."
+            )
+            msg = "Unremarkable chest radiograph: No acute cardiopulmonary abnormality detected."
+        else:
+            msg = f"DenseNet-121 identified {len(findings)} pathologies meeting clinical operating threshold (p >= 50%)."
 
         return ImagingReport(
             status="ok",

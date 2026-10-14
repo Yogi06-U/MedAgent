@@ -428,10 +428,10 @@ def check_urgency(
             if res.flag in ("critical high", "critical low"):
                 urgent_reasons.append(f"Critical panic laboratory value: {res.test} = {res.value} {res.unit} ({res.flag})")
 
-    # 3. Possible pneumothorax on imaging
+    # 3. Definite/high-confidence pneumothorax on imaging
     if imaging_report and imaging_report.status == "ok":
         for f in imaging_report.findings:
-            if "pneumothorax" in f.finding.lower() and f.probability >= 0.40:
+            if "pneumothorax" in f.finding.lower() and f.probability >= 0.70 and f.confidence == "high":
                 urgent_reasons.append(f"Radiographic pneumothorax identified (p={f.probability:.1%})")
 
     return bool(urgent_reasons), urgent_reasons

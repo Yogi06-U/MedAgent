@@ -321,44 +321,56 @@ export function WorkspaceTabs({
                 {/* Findings List */}
                 <div className="lg:col-span-5 space-y-3">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-ink-teal dark:text-teal-300">
-                    Detected Findings (Top-6, p ≥ 0.35)
+                    Detected Findings {imagingReport.findings?.length > 0 ? `(Top-${imagingReport.findings.length}, p ≥ 50%)` : ''}
                   </h4>
 
-                  <div className="space-y-2">
-                    {imagingReport.findings.map((f, i) => (
-                      <div
-                        key={i}
-                        onClick={() => setSelectedFinding(f.finding)}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                          selectedFinding === f.finding
-                            ? 'border-signal-teal bg-teal-50 dark:bg-teal-950/40 shadow-sm'
-                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="font-bold text-slate-800 dark:text-slate-100">
-                            {f.finding}
-                          </span>
-                          <span className="font-mono font-bold text-signal-teal">
-                            {(f.probability * 100).toFixed(1)}%
-                          </span>
-                        </div>
-
-                        {/* Probability Progress Bar */}
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden mb-2">
-                          <div
-                            className="bg-signal-teal h-full rounded-full"
-                            style={{ width: `${f.probability * 100}%` }}
-                          />
-                        </div>
-
-                        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                          <span>Location: <strong>{f.location}</strong></span>
-                          <span>Indicative Severity: <strong className="capitalize">{f.severity}</strong></span>
-                        </div>
+                  {(!imagingReport.findings || imagingReport.findings.length === 0) ? (
+                    <div className="p-4 rounded-lg border border-teal-200 dark:border-teal-900/50 bg-teal-50/60 dark:bg-teal-950/20 text-center space-y-2">
+                      <CheckCircle2 className="w-8 h-8 text-teal-600 dark:text-teal-400 mx-auto" />
+                      <div className="font-bold text-sm text-teal-900 dark:text-teal-200">
+                        Unremarkable Radiograph
                       </div>
-                    ))}
-                  </div>
+                      <p className="text-xs text-teal-700 dark:text-teal-300">
+                        {imagingReport.message || "No acute cardiopulmonary abnormalities detected above operating threshold."}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {imagingReport.findings.map((f, i) => (
+                        <div
+                          key={i}
+                          onClick={() => setSelectedFinding(f.finding)}
+                          className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                            selectedFinding === f.finding
+                              ? 'border-signal-teal bg-teal-50 dark:bg-teal-950/40 shadow-sm'
+                              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-bold text-slate-800 dark:text-slate-100">
+                              {f.finding}
+                            </span>
+                            <span className="font-mono font-bold text-signal-teal">
+                              {(f.probability * 100).toFixed(1)}%
+                            </span>
+                          </div>
+
+                          {/* Probability Progress Bar */}
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden mb-2">
+                            <div
+                              className="bg-signal-teal h-full rounded-full"
+                              style={{ width: `${f.probability * 100}%` }}
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                            <span>Location: <strong>{f.location}</strong></span>
+                            <span>Indicative Severity: <strong className="capitalize">{f.severity}</strong></span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {imagingReport.image_quality_notes?.length > 0 && (
                     <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">

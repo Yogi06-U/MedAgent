@@ -15,6 +15,8 @@ from medagent.schemas import CaseInput, DoctorDecision
 from medagent.graph import build_graph, graph_checkpointer
 
 
+import uuid
+
 def main():
     print("=" * 70)
     print(" MedAgent - Multimodal Multi-Agent Clinical Case Walkthrough")
@@ -29,14 +31,16 @@ def main():
         "Creatinine 1.0 mg/dL (0.7-1.3)"
     )
 
+    case_id = f"demo_case_{uuid.uuid4().hex[:6]}"
     case_input = CaseInput(
-        case_id="case_demo_pneumonia",
+        case_id=case_id,
         clinical_text="64yo male with 4 days of fever, purulent cough, right pleuritic chest pain and dyspnea.",
         patient_age=64,
         patient_sex="male",
         image_paths=[sample_cxr] if os.path.exists(sample_cxr) else [],
         lab_text=lab_text,
     )
+
 
     print(f"\n[1] Case Submitted: ID={case_input.case_id}")
     print(f"    Patient: {case_input.patient_age}yo {case_input.patient_sex}")

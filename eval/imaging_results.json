@@ -35,14 +35,14 @@
     "Enlarged Cardiomediastinum"
   ],
   "cpu_inference_latency_ms": {
-    "mean": 3500.15,
-    "std": 165.68,
+    "mean": 1835.26,
+    "std": 114.24,
     "runs": [
-      3782.56,
-      3419.4,
-      3561.47,
-      3289.16,
-      3448.17
+      1662.0,
+      1965.03,
+      1950.03,
+      1836.23,
+      1763.02
     ]
   },
   "published_auroc": {
