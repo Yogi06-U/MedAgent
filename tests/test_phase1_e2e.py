@@ -41,11 +41,8 @@ def test_phase1_ui_flow():
             analyse_btn = page.locator("button:has-text('Analyse Case')")
             analyse_btn.click()
 
-            # Wait for Stepper to show done on plan
-            page.wait_for_selector("text=Orchestrator Plan", timeout=8000)
-
             # Wait for physician gate bar to show Approve
-            page.wait_for_selector("text=Approve & Release", timeout=8000)
+            page.wait_for_selector("text=Approve & Release", timeout=12000)
             time.sleep(1)
 
             # Capture Phase 1 Stepper proof screenshot

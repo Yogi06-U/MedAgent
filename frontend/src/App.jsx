@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { HeaderStatus } from './components/HeaderStatus';
 import { IntakePanel } from './components/IntakePanel';
-import { PipelineStepper } from './components/PipelineStepper';
 import { WorkspaceTabs } from './components/WorkspaceTabs';
 import { PhysicianBar } from './components/PhysicianBar';
 import { EditSummaryModal } from './components/EditSummaryModal';
@@ -52,6 +51,13 @@ export default function App() {
     if (!currentCaseId) return;
 
     const eventSource = new EventSource(`/api/cases/${currentCaseId}/events`);
+
+    eventSource.addEventListener('case_initialized', (e) => {
+      const data = JSON.parse(e.data);
+      if (data.data?.case_input) {
+        setCaseInput(data.data.case_input);
+      }
+    });
 
     eventSource.addEventListener('node_started', (e) => {
       const data = JSON.parse(e.data);
@@ -156,6 +162,9 @@ export default function App() {
       });
       const data = await resp.json();
       setCurrentCaseId(data.case_id);
+      if (data.case_input) {
+        setCaseInput(data.case_input);
+      }
     } catch (err) {
       console.error('Failed to submit case:', err);
       setIsAnalyzing(false);
@@ -207,9 +216,6 @@ export default function App() {
         {/* Left Zone: Intake */}
         <IntakePanel onSubmit={handleCaseSubmit} isAnalyzing={isAnalyzing} />
 
-        {/* Centre Zone: Live Stepper */}
-        <PipelineStepper nodeStates={nodeStates} />
-
         {/* Right Zone: Workspace */}
         <WorkspaceTabs
           caseId={currentCaseId}
@@ -220,6 +226,7 @@ export default function App() {
           ragReport={ragReport}
           safetyReport={safetyReport}
           auditEvents={auditEvents}
+          isAnalyzing={isAnalyzing}
           onSelectCitation={(ev) => setSelectedCitation(ev)}
         />
       </div>

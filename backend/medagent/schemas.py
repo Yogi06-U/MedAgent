@@ -75,6 +75,20 @@ class LabPattern(BaseModel):
     urgency: Literal["routine", "soon", "urgent"]
 
 
+class LabDiseaseInference(BaseModel):
+    """Specific clinical disease or syndrome inferred from laboratory findings."""
+    model_config = ConfigDict(extra="forbid")
+
+    disease: str
+    likelihood: Literal["high", "moderate", "low"]
+    severity: Literal["mild", "moderate", "severe", "critical"]
+    pathophysiology: str
+    clinical_rationale: str
+    supporting_biomarkers: List[str] = Field(default_factory=list)
+    suggested_confirmatory_workup: List[str] = Field(default_factory=list)
+    confidence_score: Optional[float] = Field(default=None, description="Neural network sigmoid probability score")
+
+
 class LabReport(BaseModel):
     """Structured report returned by the Lab Agent."""
     model_config = ConfigDict(extra="forbid")
@@ -82,6 +96,8 @@ class LabReport(BaseModel):
     status: Literal["ok", "unavailable", "skipped", "error"]
     results: List[LabResult] = Field(default_factory=list)
     patterns: List[LabPattern] = Field(default_factory=list)
+    inferred_diseases: List[LabDiseaseInference] = Field(default_factory=list)
+    clinical_summary: str = ""
     unparsed_lines: List[str] = Field(default_factory=list)
     message: str = ""
 

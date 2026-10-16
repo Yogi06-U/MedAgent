@@ -25,6 +25,7 @@ export function WorkspaceTabs({
   ragReport,
   safetyReport,
   auditEvents,
+  isAnalyzing,
   onSelectCitation,
 }) {
   const [activeTab, setActiveTab] = useState('summary');
@@ -131,20 +132,164 @@ export function WorkspaceTabs({
               </div>
             )}
 
+            {/* Synthesis In Progress Banner */}
+            {isAnalyzing && !draft && (
+              <div className="bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 p-4 rounded-xl flex items-center gap-3">
+                <div className="w-4 h-4 border-2 border-signal-teal border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <div>
+                  <h4 className="text-xs font-bold text-teal-900 dark:text-teal-200">
+                    Clinical Multi-Agent Synthesis in Progress
+                  </h4>
+                  <p className="text-[11px] text-teal-700 dark:text-teal-300 mt-0.5">
+                    Analyzing clinical presentation, chest radiograph, laboratory results, and medical literature...
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Clinical Summary */}
             <div className="bg-white dark:bg-slate-950 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-ink-teal dark:text-teal-300">
-                  Multimodal Clinical Impression
+                  Clinical Impression & Assessment
                 </h3>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  Mode: {draft?.mode || 'rule_engine'}
-                </span>
               </div>
               <p className="text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-sans">
-                {draft?.summary || "Awaiting multi-agent synthesis..."}
+                {draft?.summary || (isAnalyzing ? "Synthesizing case findings across specialists..." : "Awaiting case submission...")}
               </p>
             </div>
+
+            {/* Multimodal Specialist Findings (Dual Imaging & Laboratory Side-by-Side) */}
+            {(imagingReport || labReport) && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-ink-teal dark:text-teal-300">
+                    Multimodal Specialist Results (Imaging & Laboratory)
+                  </h3>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    Simultaneous Dual Evaluation
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Left Column: Chest Radiograph Findings */}
+                  <div className="bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-signal-teal" />
+                          <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                            Chest Radiograph (CXR AI)
+                          </h4>
+                        </div>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                          imagingReport?.findings?.length
+                            ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        }`}>
+                          {imagingReport?.status === 'ok'
+                            ? `${imagingReport.findings.length} Finding${imagingReport.findings.length === 1 ? '' : 's'}`
+                            : (imagingReport?.status || 'No Image')}
+                        </span>
+                      </div>
+
+                      {imagingReport?.findings?.length ? (
+                        <div className="space-y-2 mt-2">
+                          {imagingReport.findings.map((f, i) => (
+                            <div key={i} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                              <div>
+                                <span className="font-semibold text-slate-800 dark:text-slate-200">{f.finding}</span>
+                                <span className="text-[11px] text-slate-400 ml-1.5">({f.location})</span>
+                              </div>
+                              <span className="font-mono font-bold text-signal-teal text-[11px]">
+                                {(f.probability * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 italic mt-2">
+                          {imagingReport?.message || "No acute radiographic abnormalities detected."}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('imaging')}
+                        className="text-xs text-signal-teal hover:underline font-semibold flex items-center gap-1"
+                      >
+                        <span>View Radiograph & Grad-CAM Heatmap</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Laboratory Inferences & Blood Tests */}
+                  <div className="bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <div className="flex items-center gap-2">
+                          <FlaskConical className="w-4 h-4 text-ink-teal dark:text-teal-400" />
+                          <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                            Laboratory Results (PyTorch Net)
+                          </h4>
+                        </div>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                          labReport?.inferred_diseases?.length
+                            ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        }`}>
+                          {labReport?.status === 'ok'
+                            ? `${labReport.results?.length || 0} Tests Analysed`
+                            : (labReport?.status || 'No Labs')}
+                        </span>
+                      </div>
+
+                      {labReport?.inferred_diseases?.length ? (
+                        <div className="space-y-2 mt-2">
+                          {labReport.inferred_diseases.slice(0, 3).map((d, i) => (
+                            <div key={i} className="p-2 rounded-lg bg-teal-50/50 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/40 flex items-center justify-between text-xs">
+                              <span className="font-semibold text-slate-800 dark:text-slate-200 truncate pr-2">
+                                {d.disease}
+                              </span>
+                              <span className="font-mono font-bold text-teal-700 dark:text-teal-300 text-[11px] flex-shrink-0">
+                                {d.confidence_score ? `${(d.confidence_score * 100).toFixed(1)}%` : d.likelihood.toUpperCase()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : labReport?.results?.length ? (
+                        <div className="space-y-1.5 mt-2">
+                          {labReport.results.slice(0, 3).map((r, i) => (
+                            <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                              <span className="text-slate-700 dark:text-slate-300">{r.test}</span>
+                              <span className="font-mono font-semibold">{r.value} {r.unit}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 italic mt-2">
+                          {labReport?.message || "No laboratory data entered for this case."}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('labs')}
+                        className="text-xs text-signal-teal hover:underline font-semibold flex items-center gap-1"
+                      >
+                        <span>View All Laboratory Analytes & Biomarkers</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Ranked Differentials */}
             <div className="space-y-3">
@@ -219,7 +364,9 @@ export function WorkspaceTabs({
                   </div>
                 ))
               ) : (
-                <p className="text-slate-400 italic">No differential diagnoses available.</p>
+                <p className="text-slate-400 italic">
+                  {isAnalyzing ? "Evaluating differential diagnoses across modalities..." : "No differential diagnoses available."}
+                </p>
               )}
             </div>
 
@@ -397,6 +544,114 @@ export function WorkspaceTabs({
           <div className="space-y-4">
             {labReport?.status === 'ok' ? (
               <>
+                {/* Clinical Interpretation & Inferred Diseases */}
+                {labReport.inferred_diseases?.length > 0 && (
+                  <div className="bg-white dark:bg-slate-950 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-ink-teal dark:text-teal-300 flex items-center gap-2">
+                          <span>Inferred Clinical Diagnoses (ClinicalLabNet Neural Classifier)</span>
+                          <span className="px-2 py-0.5 text-[9px] font-mono font-medium rounded bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                            PyTorch Deep Learning
+                          </span>
+                        </h4>
+                        <span className="text-[11px] font-semibold text-teal-600 dark:text-teal-400">
+                          {labReport.inferred_diseases.length} condition{labReport.inferred_diseases.length > 1 ? 's' : ''} identified
+                        </span>
+                      </div>
+                      {labReport.clinical_summary && (
+                        <p className="text-xs text-slate-700 dark:text-slate-300 mt-2 leading-relaxed bg-slate-50 dark:bg-slate-900/60 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+                          {labReport.clinical_summary}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3">
+                      {labReport.inferred_diseases.map((inf, i) => {
+                        const isCritical = inf.severity === 'critical';
+                        const isSevere = inf.severity === 'severe';
+                        const isModerate = inf.severity === 'moderate';
+
+                        return (
+                          <div
+                            key={i}
+                            className={`p-4 rounded-xl border transition-all ${
+                              isCritical
+                                ? 'border-rose-300 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20 shadow-sm'
+                                : isSevere
+                                ? 'border-amber-300 dark:border-amber-900 bg-amber-50/30 dark:bg-amber-950/20'
+                                : isModerate
+                                ? 'border-sky-200 dark:border-sky-900 bg-sky-50/20 dark:bg-sky-950/15'
+                                : 'border-emerald-200 dark:border-emerald-900 bg-emerald-50/20 dark:bg-emerald-950/15'
+                            }`}
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className={`w-2.5 h-2.5 rounded-full ${
+                                  isCritical ? 'bg-rose-500 animate-pulse' : isSevere ? 'bg-amber-500' : isModerate ? 'bg-sky-500' : 'bg-emerald-500'
+                                }`} />
+                                <h5 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                                  {inf.disease}
+                                </h5>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {inf.confidence_score !== undefined && inf.confidence_score !== null && (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-teal-100 text-teal-800 dark:bg-teal-950/80 dark:text-teal-200 border border-teal-300 dark:border-teal-800">
+                                    {(inf.confidence_score * 100).toFixed(1)}% Confidence
+                                  </span>
+                                )}
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                  isCritical
+                                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/70 dark:text-rose-200'
+                                    : isSevere
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/70 dark:text-amber-200'
+                                    : isModerate
+                                    ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/70 dark:text-sky-200'
+                                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/70 dark:text-emerald-200'
+                                }`}>
+                                  {inf.severity}
+                                </span>
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                  Likelihood: {inf.likelihood}
+                                </span>
+                              </div>
+                            </div>
+
+                            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed mb-2 font-medium">
+                              {inf.clinical_rationale}
+                            </p>
+
+                            <div className="text-[11px] text-slate-600 dark:text-slate-400 bg-white/70 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-200/60 dark:border-slate-800/60 mb-2.5">
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">Pathophysiology: </span>
+                              {inf.pathophysiology}
+                            </div>
+
+                            {inf.supporting_biomarkers?.length > 0 && (
+                              <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mr-1">Biomarkers:</span>
+                                {inf.supporting_biomarkers.map((bio, bIdx) => (
+                                  <span
+                                    key={bIdx}
+                                    className="px-2 py-0.5 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-mono text-[10px] text-slate-800 dark:text-slate-200 shadow-2xs"
+                                  >
+                                    {bio}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {inf.suggested_confirmatory_workup?.length > 0 && (
+                              <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-400 border-t border-slate-200/50 dark:border-slate-800/50 pt-2">
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">Confirmatory Workup: </span>
+                                {inf.suggested_confirmatory_workup.join(' • ')}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 {/* Identified Clinical Patterns */}
                 {labReport.patterns?.length > 0 && (
                   <div className="bg-white dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">

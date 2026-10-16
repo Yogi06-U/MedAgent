@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Mic, FileText, Image as ImageIcon, Play, Sparkles, AlertCircle } from 'lucide-react';
+import { Upload, Mic, FileText, Image as ImageIcon, Play, Sparkles, AlertCircle, X, FlaskConical } from 'lucide-react';
 
 const SYNTHETIC_CASES = [
   {
@@ -44,6 +44,7 @@ export function IntakePanel({ onSubmit, isAnalyzing }) {
   const [labText, setLabText] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [labFile, setLabFile] = useState(null);
   const [labFiles, setLabFiles] = useState([]);
   const [isRecording, setIsRecording] = useState(false);
   const [transcribeNotice, setTranscribeNotice] = useState(null);
@@ -55,6 +56,7 @@ export function IntakePanel({ onSubmit, isAnalyzing }) {
     setLabText(c.data.lab_text);
     setImageFile(null);
     setImagePreview(null);
+    setLabFile(null);
   };
 
   const handleImageChange = (e) => {
@@ -64,6 +66,13 @@ export function IntakePanel({ onSubmit, isAnalyzing }) {
       const reader = new FileReader();
       reader.onload = (event) => setImagePreview(event.target?.result);
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLabFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLabFile(file);
     }
   };
 
@@ -89,9 +98,15 @@ export function IntakePanel({ onSubmit, isAnalyzing }) {
     if (labText) formData.append('lab_text', labText);
 
     if (imageFile) {
+      formData.append('image_files', imageFile);
       formData.append('files', imageFile);
     }
+    if (labFile) {
+      formData.append('lab_files', labFile);
+      formData.append('files', labFile);
+    }
     labFiles.forEach(f => {
+      formData.append('lab_files', f);
       formData.append('files', f);
     });
 
@@ -101,11 +116,10 @@ export function IntakePanel({ onSubmit, isAnalyzing }) {
   return (
     <aside className="w-full lg:w-96 flex-shrink-0 bg-white dark:bg-paper-cardDark border-r border-slate-200 dark:border-slate-800 p-5 flex flex-col gap-5 overflow-y-auto max-h-[calc(100vh-60px)]">
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2">
           <h2 className="text-sm font-bold uppercase tracking-wider text-ink-teal dark:text-teal-300">
             Case Intake
           </h2>
-          <span className="text-xs text-slate-500 dark:text-slate-400">Step 1</span>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Enter clinical presentation, radiograph, or lab results for multi-agent synthesis.
@@ -230,7 +244,50 @@ export function IntakePanel({ onSubmit, isAnalyzing }) {
           </label>
         </div>
 
-        {/* Laboratory Results */}
+        {/* Laboratory Document Dropzone */}
+        <div>
+          <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Laboratory Document (PDF / CSV / Text Report)
+          </label>
+          <label className="flex flex-col items-center justify-center p-2.5 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-signal-teal rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-900/50 transition-colors">
+            {labFile ? (
+              <div className="flex items-center justify-between w-full px-2">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <FlaskConical className="w-4 h-4 text-signal-teal flex-shrink-0" />
+                  <p className="text-xs font-medium truncate text-slate-800 dark:text-slate-200">
+                    {labFile.name}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setLabFile(null);
+                  }}
+                  className="p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="text-center">
+                <FileText className="w-5 h-5 text-slate-400 mx-auto mb-1" />
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Drop Lab PDF, CSV, or Text File
+                </span>
+              </div>
+            )}
+            <input
+              type="file"
+              accept=".pdf,.csv,.tsv,.txt"
+              onChange={handleLabFileChange}
+              className="hidden"
+            />
+          </label>
+        </div>
+
+        {/* Laboratory Results (Typed or Pasted) */}
         <div>
           <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
             Laboratory Results (Typed or Pasted)

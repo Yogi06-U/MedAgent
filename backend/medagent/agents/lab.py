@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from medagent.config import settings
-from medagent.schemas import CaseInput, LabReport, LabResult, LabPattern
+from medagent.schemas import CaseInput, LabReport, LabResult, LabPattern, LabDiseaseInference
 
 logger = logging.getLogger("medagent.lab")
 
@@ -166,45 +166,62 @@ def parse_lab_line(
     patient_sex: Optional[str] = None,
 ) -> Tuple[Optional[LabResult], Optional[str]]:
     """
-    Parse a single line into a LabResult.
-    Expected patterns: 'name: value unit [range]', 'name value unit range', etc.
+    Parse a single line or table row into a LabResult.
+    Handles 'name: value unit [range]', 'name value unit range flag', CSV/TSV cells, and tables.
     """
     cleaned = line.strip()
     if not cleaned or cleaned.startswith("#"):
         return None, None
 
-    # Regex capturing: (Test Name) [:=]? (Value) (Optional Unit) (Optional [Range])
-    pattern = re.compile(
-        r"^(?P<name>[a-zA-Z0-9_\-\s\(\)\/\+\%]+?)"
-        r"[:\t\s=]+"
-        r"(?P<val>[0-9]+(?:\.[0-9]+)?)"
-        r"(?:\s*(?P<unit>[a-zA-Z\^\d\%\/µ]+))?"
-        r"(?:\s*[\(\[\{]?(?P<range>[0-9\.\s\-–to]+)[\)\]\}]?)?$",
-        re.IGNORECASE,
-    )
+    raw_name = ""
+    raw_val = None
+    raw_unit = ""
+    printed_range = ""
 
-    m = pattern.match(cleaned)
-    if not m:
-        # Check CSV or delimiter like comma or semicolon
-        parts = re.split(r"[,;]\s*", cleaned)
-        if len(parts) >= 2:
-            raw_name = parts[0].strip()
+    # Strategy 1: Check delimiter-separated cells (from PDF tables or CSV/TSV)
+    parts = [p.strip() for p in re.split(r"\s*[:;,|\t]\s*", cleaned) if p.strip()]
+    if len(parts) >= 2:
+        name_cand = parts[0]
+        for idx in range(1, len(parts)):
+            num_match = re.search(r"[-+]?[0-9]+(?:\.[0-9]+)?", parts[idx])
+            if num_match:
+                try:
+                    raw_val = float(num_match.group(0))
+                    raw_name = name_cand
+                    raw_unit = parts[idx + 1] if len(parts) > idx + 1 else ""
+                    printed_range = parts[idx + 2] if len(parts) > idx + 2 else ""
+                    break
+                except ValueError:
+                    pass
+
+    # Strategy 2: If not resolved, use structured regex
+    if raw_val is None or not raw_name:
+        pattern = re.compile(
+            r"^(?P<name>[a-zA-Z0-9_\-\s\(\)\/\+\%]+?)"
+            r"[:\t\s=]+"
+            r"(?P<val>[0-9]+(?:\.[0-9]+)?)"
+            r"(?:\s*(?P<unit>[a-zA-Z\^\d\%\/µ]+))?"
+            r"(?:\s*[\(\[\{]?(?P<range>[0-9\.\s\-–to]+)[\)\]\}]?)?"
+            r"(?:\s*(?P<flag_note>[a-zA-Z\*]+))?$",
+            re.IGNORECASE,
+        )
+        m = pattern.match(cleaned)
+        if m:
+            raw_name = m.group("name").strip()
             try:
-                raw_val = float(re.findall(r"[0-9]+(?:\.[0-9]+)?", parts[1])[0])
-                raw_unit = parts[2].strip() if len(parts) > 2 else ""
-                printed_range = parts[3].strip() if len(parts) > 3 else ""
-            except (IndexError, ValueError):
+                raw_val = float(m.group("val"))
+            except ValueError:
                 return None, cleaned
+            raw_unit = m.group("unit") or ""
+            printed_range = m.group("range") or ""
         else:
             return None, cleaned
-    else:
-        raw_name = m.group("name").strip()
-        try:
-            raw_val = float(m.group("val"))
-        except ValueError:
-            return None, cleaned
-        raw_unit = m.group("unit") or ""
-        printed_range = m.group("range") or ""
+
+    # Check for range embedded in line if not yet found
+    if not printed_range:
+        m_rng = re.search(r"([0-9]+(?:\.[0-9]+)?\s*[-–to]+\s*[0-9]+(?:\.[0-9]+)?)", cleaned)
+        if m_rng and m_rng.group(1) != str(raw_val):
+            printed_range = m_rng.group(1)
 
     match_info = find_test_match(raw_name, ref_db)
     if not match_info:
@@ -243,19 +260,30 @@ def parse_lab_line(
 
 
 def extract_text_from_file(file_path: str) -> Tuple[str, List[str]]:
-    """Extract text lines from CSV/TSV, PDF, or text file."""
+    """
+    Extract structured text lines from CSV/TSV, PDF, or text file.
+    Supports table extraction from multi-column PDF lab reports via pdfplumber.
+    """
     path = Path(file_path)
     if not path.exists():
         return "", [f"File not found: {file_path}"]
 
     ext = path.suffix.lower()
-    text = ""
+    extracted_lines: List[str] = []
     notes: List[str] = []
 
     if ext in (".txt", ".csv", ".tsv"):
         try:
             with open(path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
+                if ext in (".csv", ".tsv"):
+                    delimiter = "\t" if ext == ".tsv" else ","
+                    reader = csv.reader(f, delimiter=delimiter)
+                    for row in reader:
+                        clean_cells = [str(c).strip() for c in row if c is not None and str(c).strip()]
+                        if len(clean_cells) >= 2:
+                            extracted_lines.append(" : ".join(clean_cells))
+                else:
+                    extracted_lines.extend(f.read().splitlines())
         except Exception as e:
             notes.append(f"Error reading {path.name}: {str(e)}")
 
@@ -263,8 +291,20 @@ def extract_text_from_file(file_path: str) -> Tuple[str, List[str]]:
         try:
             import pdfplumber
             with pdfplumber.open(path) as pdf:
-                pages_text = [page.extract_text() or "" for page in pdf.pages]
-                text = "\n".join(pages_text)
+                for page in pdf.pages:
+                    # 1. Extract structured tables from PDF lab report
+                    tables = page.extract_tables()
+                    for table in tables or []:
+                        for row in table or []:
+                            if not row:
+                                continue
+                            clean_cells = [str(c).strip().replace("\n", " ") for c in row if c is not None and str(c).strip()]
+                            if len(clean_cells) >= 2:
+                                extracted_lines.append(" : ".join(clean_cells))
+                    # 2. Extract raw textual lines as well
+                    page_text = page.extract_text()
+                    if page_text:
+                        extracted_lines.extend(page_text.splitlines())
         except ImportError:
             notes.append("pdfplumber not available; cannot parse PDF lab report.")
         except Exception as e:
@@ -275,13 +315,14 @@ def extract_text_from_file(file_path: str) -> Tuple[str, List[str]]:
             import pytesseract
             from PIL import Image
             img = Image.open(path)
-            text = pytesseract.image_to_string(img)
+            ocr_text = pytesseract.image_to_string(img)
+            extracted_lines.extend(ocr_text.splitlines())
         except ImportError:
             notes.append(f"Tesseract OCR not installed in environment; image {path.name} cannot be parsed.")
         except Exception as e:
             notes.append(f"OCR extraction failed for {path.name}: {str(e)}")
 
-    return text, notes
+    return "\n".join(extracted_lines), notes
 
 
 def evaluate_patterns(results: List[LabResult]) -> List[LabPattern]:
@@ -629,8 +670,535 @@ def evaluate_patterns(results: List[LabResult]) -> List[LabPattern]:
     return patterns
 
 
+def infer_laboratory_diseases(results: List[LabResult], patient_sex: Optional[str] = None) -> List[LabDiseaseInference]:
+    """
+    Infer concrete clinical diseases and syndromes from standardized laboratory findings
+    using evidence-based diagnostic criteria (KDIGO, ADA, WHO, AHA).
+    """
+    if not results:
+        return []
+
+    res_map: Dict[str, LabResult] = {r.test: r for r in results}
+
+    def get_val(name: str) -> Optional[float]:
+        return res_map[name].value if name in res_map else None
+
+    def get_flag(name: str) -> Optional[str]:
+        return res_map[name].flag if name in res_map else None
+
+    def fmt_biomarker(name: str) -> str:
+        r = res_map[name]
+        return f"{r.test}: {r.value:g} {r.unit} ({r.flag.upper()})"
+
+    inferred: List[LabDiseaseInference] = []
+
+    # Values extraction
+    hb = get_val("Hemoglobin")
+    mcv = get_val("MCV")
+    wbc = get_val("WBC Count")
+    neut = get_val("Neutrophils (%)")
+    plt = get_val("Platelet Count")
+    crp = get_val("C-Reactive Protein")
+    esr = get_val("ESR")
+    pct = get_val("Procalcitonin")
+    fbs = get_val("Fasting Glucose")
+    rbs = get_val("Random Glucose")
+    a1c = get_val("HbA1c")
+    k = get_val("Potassium")
+    na = get_val("Sodium")
+    cl = get_val("Chloride")
+    creat = get_val("Serum Creatinine")
+    bun = get_val("BUN")
+    egfr = get_val("eGFR")
+    bicarb = get_val("Bicarbonate / CO2")
+    ca = get_val("Serum Calcium")
+    lactate = get_val("Lactate")
+    alt = get_val("ALT (SGPT)")
+    ast = get_val("AST (SGOT)")
+    alp = get_val("Alkaline Phosphatase")
+    ggt = get_val("GGT")
+    tbili = get_val("Total Bilirubin")
+    dbili = get_val("Direct Bilirubin")
+    tsh = get_val("TSH")
+    ft4 = get_val("Free T4")
+    trop_i = get_val("Troponin I")
+    trop_t = get_val("Troponin T")
+    ferritin = get_val("Ferritin")
+    b12 = get_val("Vitamin B12")
+    folate = get_val("Serum Folate")
+    tg = get_val("Triglycerides")
+    ldl = get_val("LDL Cholesterol")
+    lipase = get_val("Lipase")
+    amylase = get_val("Amylase")
+
+    # 1. Critical Hyperkalemia
+    if k is not None and k >= 5.5:
+        is_crit = k >= 6.0
+        inferred.append(LabDiseaseInference(
+            disease="Severe Hyperkalemia",
+            likelihood="high",
+            severity="critical" if is_crit else "severe",
+            pathophysiology="Dangerous elevation of extracellular potassium lowering myocardial resting membrane threshold, impairing cardiac repolarization, and predisposing to fatal ventricular arrhythmias or asystole.",
+            clinical_rationale=f"Serum potassium elevated to {k:.2f} mEq/L, crossing the safety threshold (3.5–5.0 mEq/L) and posing acute cardiotoxicity risk.",
+            supporting_biomarkers=[fmt_biomarker("Potassium")],
+            suggested_confirmatory_workup=[
+                "Immediate 12-lead ECG for peaked T waves, PR prolongation, and QRS widening",
+                "Continuous cardiac telemetry monitoring",
+                "Membrane stabilization with IV Calcium Gluconate (10%) if ECG changes present",
+                "Intracellular shifting therapy (IV regular insulin + 50% Dextrose, nebulized albuterol)",
+            ],
+        ))
+
+    # 2. Hypokalemia
+    if k is not None and k < 3.5:
+        is_crit = k < 2.8
+        inferred.append(LabDiseaseInference(
+            disease="Hypokalemia",
+            likelihood="high",
+            severity="critical" if is_crit else ("severe" if k < 3.0 else "moderate"),
+            pathophysiology="Depletion of extracellular potassium hyperpolarizing excitable cell membranes, impairing neuromuscular transmission, and causing cardiac repolarization delay with prominent U waves.",
+            clinical_rationale=f"Serum potassium decreased to {k:.2f} mEq/L below physiological minimum (3.5 mEq/L).",
+            supporting_biomarkers=[fmt_biomarker("Potassium")],
+            suggested_confirmatory_workup=[
+                "12-lead ECG for ST depression, T wave flattening, and U waves",
+                "Serum magnesium level (hypomagnesemia refractory potassium wasting)",
+                "Oral or intravenous potassium chloride replacement protocol",
+            ],
+        ))
+
+    # 3. Acute Kidney Injury (AKI) / Advanced Renal Failure
+    if creat is not None and (creat >= 1.4 or get_flag("Serum Creatinine") in ("high", "critical high") or (egfr is not None and egfr < 60.0)):
+        is_crit = creat >= 4.0 or (egfr is not None and egfr < 15.0)
+        is_sev = creat >= 2.0 or (egfr is not None and egfr < 30.0)
+        supp = [fmt_biomarker("Serum Creatinine")]
+        if egfr is not None:
+            supp.append(fmt_biomarker("eGFR"))
+        if bun is not None:
+            supp.append(fmt_biomarker("BUN"))
+
+        inferred.append(LabDiseaseInference(
+            disease="Acute Kidney Injury / Renal Impairment",
+            likelihood="high",
+            severity="critical" if is_crit else ("severe" if is_sev else "moderate"),
+            pathophysiology="Abrupt decline in glomerular filtration rate leading to retention of urea, creatinine, and nitrogenous metabolic waste products with disruption of fluid, electrolyte, and acid-base homeostasis.",
+            clinical_rationale=f"Serum creatinine elevated to {creat:.2f} mg/dL" + (f" with severely reduced eGFR of {egfr:.1f} mL/min/1.73m2" if egfr else "") + ", demonstrating renal parenchymal filtration failure.",
+            supporting_biomarkers=supp,
+            suggested_confirmatory_workup=[
+                "Renal duplex ultrasound to exclude obstructive hydronephrosis",
+                "Urinalysis with urine microscopy for casts, protein, and dysmorphic RBCs",
+                "Fractional excretion of sodium (FeNa) or urea (FEUrea)",
+                "Strict intake/output tracking and discontinuation of nephrotoxic medications",
+            ],
+        ))
+
+    # 4. Prerenal Azotemia / Dehydration
+    if bun is not None and creat is not None and creat > 0:
+        ratio = bun / creat
+        if ratio >= 20.0 and bun > 20.0:
+            inferred.append(LabDiseaseInference(
+                disease="Prerenal Azotemia / Dehydration",
+                likelihood="high" if ratio >= 25.0 else "moderate",
+                severity="moderate",
+                pathophysiology="Decreased effective renal perfusion pressure increasing proximal tubular reabsorption of urea relative to creatinine without intrinsic tubular structural necrosis.",
+                clinical_rationale=f"Elevated BUN-to-Creatinine ratio of {ratio:.1f}:1 (BUN {bun:.1f} mg/dL, Creatinine {creat:.2f} mg/dL), characteristic of volume contraction or decreased cardiac output.",
+                supporting_biomarkers=[fmt_biomarker("BUN"), fmt_biomarker("Serum Creatinine"), f"BUN/Creatinine Ratio: {ratio:.1f}:1 (normal < 20:1)"],
+                suggested_confirmatory_workup=[
+                    "Clinical volume status assessment (mucous membranes, skin turgor, orthostatic vitals)",
+                    "Diagnostic fluid challenge with isotonic crystalloids",
+                    "Urine specific gravity and fractional excretion of sodium",
+                ],
+            ))
+
+    # 5. Diabetic Ketoacidosis (DKA)
+    gluc = fbs or rbs
+    anion_gap = (na - (cl + bicarb)) if (na is not None and cl is not None and bicarb is not None) else None
+    if gluc is not None and gluc >= 250.0 and ((bicarb is not None and bicarb <= 18.0) or (anion_gap is not None and anion_gap >= 14.0)):
+        supp = [fmt_biomarker("Fasting Glucose" if fbs else "Random Glucose")]
+        if bicarb is not None:
+            supp.append(fmt_biomarker("Bicarbonate / CO2"))
+        if anion_gap is not None:
+            supp.append(f"Calculated Anion Gap: {anion_gap:.1f} mEq/L (HIGH)")
+
+        inferred.append(LabDiseaseInference(
+            disease="Diabetic Ketoacidosis (DKA)",
+            likelihood="high",
+            severity="critical",
+            pathophysiology="Profound insulin deficiency with excessive counter-regulatory hormone surge driving unchecked lipolysis, hepatic free fatty acid oxidation into ketoacids, high anion gap metabolic acidosis, and severe osmotic dehydration.",
+            clinical_rationale=f"Marked hyperglycemia ({gluc:.1f} mg/dL) coupled with metabolic acidosis" + (f" (Bicarbonate {bicarb:.1f} mEq/L)" if bicarb else "") + (f" and high anion gap ({anion_gap:.1f} mEq/L)" if anion_gap else "") + ".",
+            supporting_biomarkers=supp,
+            suggested_confirmatory_workup=[
+                "Serum beta-hydroxybutyrate and urine ketones",
+                "Arterial/venous blood gas for pH and lactate",
+                "Aggressive isotonic IV crystalloid volume resuscitation",
+                "Continuous intravenous regular insulin infusion",
+                "Hourly capillary blood glucose and serial potassium tracking",
+            ],
+        ))
+
+    # 6. High Anion Gap Metabolic Acidosis (HAGMA)
+    if (bicarb is not None and bicarb < 20.0) or (anion_gap is not None and anion_gap > 12.0):
+        if not any(d.disease == "Diabetic Ketoacidosis (DKA)" for d in inferred):
+            supp = []
+            if bicarb is not None:
+                supp.append(fmt_biomarker("Bicarbonate / CO2"))
+            if anion_gap is not None:
+                supp.append(f"Calculated Anion Gap: {anion_gap:.1f} mEq/L (HIGH)")
+            if lactate is not None and lactate > 2.0:
+                supp.append(fmt_biomarker("Lactate"))
+
+            inferred.append(LabDiseaseInference(
+                disease="Metabolic Acidosis (High Anion Gap)" if (anion_gap and anion_gap > 12.0) else "Metabolic Acidosis",
+                likelihood="high",
+                severity="severe" if (bicarb and bicarb < 15.0) else "moderate",
+                pathophysiology="Pathological accumulation of unmeasured fixed organic acids (lactic acid, ketoacids, uremic toxins) consuming serum bicarbonate buffers.",
+                clinical_rationale="Low serum bicarbonate" + (f" ({bicarb:.1f} mEq/L)" if bicarb else "") + (f" with elevated serum anion gap of {anion_gap:.1f} mEq/L" if anion_gap else "") + ".",
+                supporting_biomarkers=supp,
+                suggested_confirmatory_workup=[
+                    "Arterial blood gas for definitive pH and pCO2 respiratory compensation",
+                    "Serum lactate and serum beta-hydroxybutyrate",
+                    "Screening for toxic ingestions if etiology undetermined",
+                ],
+            ))
+
+    # 7. Type 2 Diabetes Mellitus / Uncontrolled Hyperglycemia
+    if not any(d.disease == "Diabetic Ketoacidosis (DKA)" for d in inferred):
+        if (a1c is not None and a1c >= 6.5) or (fbs is not None and fbs >= 126.0) or (rbs is not None and rbs >= 200.0):
+            supp = []
+            if a1c is not None:
+                supp.append(fmt_biomarker("HbA1c"))
+            if fbs is not None:
+                supp.append(fmt_biomarker("Fasting Glucose"))
+            if rbs is not None:
+                supp.append(fmt_biomarker("Random Glucose"))
+
+            inferred.append(LabDiseaseInference(
+                disease="Type 2 Diabetes Mellitus / Hyperglycemia",
+                likelihood="high",
+                severity="moderate" if (a1c and a1c >= 9.0 or (gluc and gluc >= 250)) else "mild",
+                pathophysiology="Chronic metabolic disorder of peripheral insulin resistance and progressive pancreatic beta-cell secretory failure resulting in sustained hyperglycemia.",
+                clinical_rationale="Diabetic range glycemia established by " + (f"HbA1c {a1c:.1f}% (threshold >= 6.5%)" if a1c else f"blood glucose {gluc:.1f} mg/dL") + ".",
+                supporting_biomarkers=supp,
+                suggested_confirmatory_workup=[
+                    "Fasting lipid panel and spot urine albumin-to-creatinine ratio",
+                    "Dilated diabetic retinal examination",
+                    "Comprehensive diabetic foot and peripheral vascular evaluation",
+                ],
+            ))
+
+    # 8. Severe Hypoglycemia
+    if gluc is not None and gluc < 70.0:
+        is_crit = gluc < 54.0
+        inferred.append(LabDiseaseInference(
+            disease="Severe Hypoglycemia",
+            likelihood="high",
+            severity="critical" if is_crit else "severe",
+            pathophysiology="Critically low plasma glucose concentration depriving cerebral neurons of essential oxidative fuel, triggering counter-regulatory catecholamine release and neuroglycopenic dysfunction.",
+            clinical_rationale=f"Plasma glucose critically depressed to {gluc:.1f} mg/dL (alert limit < 70 mg/dL).",
+            supporting_biomarkers=[fmt_biomarker("Fasting Glucose" if fbs else "Random Glucose")],
+            suggested_confirmatory_workup=[
+                "Immediate oral fast-acting glucose or intravenous 10-50% dextrose",
+                "Reconciliation of insulin, sulfonylurea, or oral hypoglycemic doses",
+                "Serum C-peptide, insulin, and beta-hydroxybutyrate if etiology unknown",
+            ],
+        ))
+
+    # 9. Hyponatremia
+    if na is not None and na < 135.0:
+        is_crit = na < 120.0
+        inferred.append(LabDiseaseInference(
+            disease="Hyponatremia",
+            likelihood="high",
+            severity="critical" if is_crit else ("severe" if na < 125.0 else "moderate"),
+            pathophysiology="Excess of total body water relative to sodium content causing extracellular hypo-osmolality, driving water shift into intracellular spaces and predisposing to cerebral edema.",
+            clinical_rationale=f"Serum sodium depressed to {na:.1f} mEq/L (reference interval 135–145 mEq/L).",
+            supporting_biomarkers=[fmt_biomarker("Sodium")],
+            suggested_confirmatory_workup=[
+                "Serum and urine osmolality",
+                "Urine sodium concentration",
+                "Clinical extracellular volume status determination (euvolemic vs hypovolemic vs hypervolemic)",
+            ],
+        ))
+
+    # 10. Hypernatremia
+    if na is not None and na > 145.0:
+        is_crit = na > 155.0
+        inferred.append(LabDiseaseInference(
+            disease="Hypernatremia / Dehydration",
+            likelihood="high",
+            severity="critical" if is_crit else "severe",
+            pathophysiology="Net free water deficit producing serum hyperosmolality, intracellular dehydration, and cellular shrinkage.",
+            clinical_rationale=f"Serum sodium elevated to {na:.1f} mEq/L.",
+            supporting_biomarkers=[fmt_biomarker("Sodium")],
+            suggested_confirmatory_workup=[
+                "Calculation of total body free water deficit",
+                "Gradual oral or hypotonic IV free water repletion monitoring",
+            ],
+        ))
+
+    # 11. Acute Bacterial Infection / Sepsis Risk
+    if wbc is not None and (wbc > 12.0 or wbc < 4.0):
+        has_shift = (neut is not None and neut > 80.0) or (crp is not None and crp > 50.0) or (pct is not None and pct > 0.5) or (lactate is not None and lactate > 2.0)
+        if has_shift:
+            supp = [fmt_biomarker("WBC Count")]
+            if neut is not None:
+                supp.append(fmt_biomarker("Neutrophils (%)"))
+            if crp is not None:
+                supp.append(fmt_biomarker("C-Reactive Protein"))
+            if pct is not None:
+                supp.append(fmt_biomarker("Procalcitonin"))
+            if lactate is not None:
+                supp.append(fmt_biomarker("Lactate"))
+
+            is_crit = (lactate is not None and lactate >= 2.0) or (pct is not None and pct >= 2.0)
+            inferred.append(LabDiseaseInference(
+                disease="Acute Bacterial Infection / Sepsis Risk",
+                likelihood="high",
+                severity="critical" if is_crit else "severe",
+                pathophysiology="Invasive pathogen eliciting acute bone marrow leukocyte demargination, bandemia, and systemic inflammatory endothelial activation with capillary leak.",
+                clinical_rationale=f"Leukocytosis ({wbc:.1f} x10^3/uL) with left shift and markedly elevated inflammatory/sepsis biomarkers.",
+                supporting_biomarkers=supp,
+                suggested_confirmatory_workup=[
+                    "Blood cultures (2 sets drawn from separate sites prior to antibiotics)",
+                    "Diagnostic imaging directed at suspected source (chest radiograph, CT abdomen)",
+                    "Serial serum lactate every 2-4 hours to monitor tissue perfusion",
+                    "Prompt broad-spectrum empiric antimicrobial coverage",
+                ],
+            ))
+
+    # 12. Microcytic Iron Deficiency Anemia
+    if hb is not None and get_flag("Hemoglobin") in ("low", "critical low") and mcv is not None and mcv < 80.0:
+        supp = [fmt_biomarker("Hemoglobin"), fmt_biomarker("MCV")]
+        if ferritin is not None:
+            supp.append(fmt_biomarker("Ferritin"))
+
+        inferred.append(LabDiseaseInference(
+            disease="Microcytic Iron Deficiency Anemia",
+            likelihood="high" if (ferritin is not None and ferritin < 30.0) else "moderate",
+            severity="severe" if hb < 8.0 else ("moderate" if hb < 10.0 else "mild"),
+            pathophysiology="Inadequate iron stores restricting erythroblast heme and hemoglobin synthesis, resulting in microcytic, hypochromic erythrocytes with reduced systemic oxygen delivery.",
+            clinical_rationale=f"Low hemoglobin ({hb:.1f} g/dL) with microcytosis (MCV {mcv:.1f} fL)" + (f" and depleted ferritin ({ferritin:.1f} ng/mL)" if ferritin else "") + ".",
+            supporting_biomarkers=supp,
+            suggested_confirmatory_workup=[
+                "Complete iron studies (serum ferritin, serum iron, TIBC, transferrin saturation)",
+                "Fecal occult blood test / endoscopy evaluation for gastrointestinal blood loss",
+                "Oral or intravenous therapeutic iron replacement",
+            ],
+        ))
+
+    # 13. Macrocytic / Megaloblastic Anemia
+    if hb is not None and get_flag("Hemoglobin") in ("low", "critical low") and ((mcv is not None and mcv > 100.0) or (b12 is not None and b12 < 200.0) or (folate is not None and folate < 3.0)):
+        supp = [fmt_biomarker("Hemoglobin")]
+        if mcv is not None:
+            supp.append(fmt_biomarker("MCV"))
+        if b12 is not None:
+            supp.append(fmt_biomarker("Vitamin B12"))
+        if folate is not None:
+            supp.append(fmt_biomarker("Serum Folate"))
+
+        inferred.append(LabDiseaseInference(
+            disease="Macrocytic / Megaloblastic Anemia",
+            likelihood="high",
+            severity="severe" if hb < 8.0 else "moderate",
+            pathophysiology="Deficiency of vitamin B12 or folate disrupting purine/thymidylate synthesis and erythroblast nuclear maturation, leading to nuclear-cytoplasmic dyssynchrony and abnormally large erythrocytes.",
+            clinical_rationale=f"Low hemoglobin ({hb:.1f} g/dL) with macrocytosis" + (f" (MCV {mcv:.1f} fL)" if mcv else "") + ".",
+            supporting_biomarkers=supp,
+            suggested_confirmatory_workup=[
+                "Serum methylmalonic acid (MMA) and total homocysteine levels",
+                "Peripheral blood smear examination for hypersegmented neutrophils",
+                "Vitamin B12 and folate therapeutic repletion",
+            ],
+        ))
+
+    # 14. Normocytic Anemia of Chronic Disease / Inflammation
+    if hb is not None and get_flag("Hemoglobin") in ("low", "critical low") and mcv is not None and 80.0 <= mcv <= 100.0:
+        if not any("Anemia" in d.disease for d in inferred):
+            supp = [fmt_biomarker("Hemoglobin"), fmt_biomarker("MCV")]
+            if crp is not None:
+                supp.append(fmt_biomarker("C-Reactive Protein"))
+            if esr is not None:
+                supp.append(fmt_biomarker("ESR"))
+
+            inferred.append(LabDiseaseInference(
+                disease="Normocytic Anemia of Chronic Disease / Inflammation",
+                likelihood="moderate",
+                severity="moderate" if hb < 10.0 else "mild",
+                pathophysiology="Chronic inflammation-induced hepcidin elevation sequestering iron inside reticuloendothelial macrophages, blunting renal erythropoietin response, and shortening red blood cell survival.",
+                clinical_rationale=f"Normocytic anemia (Hb {hb:.1f} g/dL, MCV {mcv:.1f} fL) with active inflammatory biomarker elevation.",
+                supporting_biomarkers=supp,
+                suggested_confirmatory_workup=[
+                    "Reticulocyte production index",
+                    "Soluble transferrin receptor-ferritin index",
+                    "Evaluation and management of underlying chronic inflammatory or systemic disorder",
+                ],
+            ))
+
+    # 15. Severe Thrombocytopenia
+    if plt is not None and plt < 150.0:
+        is_crit = plt < 50.0
+        inferred.append(LabDiseaseInference(
+            disease="Thrombocytopenia",
+            likelihood="high",
+            severity="critical" if is_crit else ("severe" if plt < 100.0 else "moderate"),
+            pathophysiology="Substantial reduction in circulating platelets predisposing to spontaneous mucocutaneous hemorrhage, petechiae, and visceral bleeding.",
+            clinical_rationale=f"Platelet count severely reduced to {plt:.1f} x10^3/uL (reference interval 150–450 x10^3/uL).",
+            supporting_biomarkers=[fmt_biomarker("Platelet Count")],
+            suggested_confirmatory_workup=[
+                "Peripheral blood smear to rule out EDTA-dependent pseudothrombocytopenia",
+                "Coagulation profile (PT/INR, aPTT, fibrinogen) to exclude DIC",
+                "Medication reconciliation for heparin-induced or drug-induced thrombocytopenia",
+            ],
+        ))
+
+    # 16. Acute Hepatocellular Injury / Transaminitis
+    if (alt is not None and alt >= 150.0) or (ast is not None and ast >= 135.0):
+        is_crit = (alt is not None and alt >= 1000.0) or (ast is not None and ast >= 1000.0)
+        supp = []
+        if alt is not None:
+            supp.append(fmt_biomarker("ALT (SGPT)"))
+        if ast is not None:
+            supp.append(fmt_biomarker("AST (SGOT)"))
+
+        inferred.append(LabDiseaseInference(
+            disease="Acute Hepatocellular Injury / Transaminitis",
+            likelihood="high",
+            severity="critical" if is_crit else ("severe" if (alt and alt >= 500) else "moderate"),
+            pathophysiology="Direct toxic, ischemic, or viral destruction of hepatocytes resulting in extensive leakage of cytosolic aminotransferases into circulation.",
+            clinical_rationale="Marked transaminitis exceeding 3x upper reference limit" + (f" (ALT {alt:.1f} U/L, AST {ast:.1f} U/L)" if alt and ast else "") + ".",
+            supporting_biomarkers=supp,
+            suggested_confirmatory_workup=[
+                "Acute viral hepatitis panel (Anti-HAV IgM, HBsAg, Anti-HBc IgM, Anti-HCV)",
+                "Serum acetaminophen level and comprehensive toxicology screen",
+                "Coagulation profile (PT/INR) and serum albumin to evaluate hepatic synthetic reserve",
+                "Right upper quadrant abdominal ultrasound with Doppler",
+            ],
+        ))
+
+    # 17. Cholestasis / Obstructive Biliary Disease
+    if ((alp is not None and alp > 147.0) or (ggt is not None and ggt > 50.0)) and ((tbili is not None and tbili > 1.2) or (dbili is not None and dbili > 0.3)):
+        supp = []
+        if alp is not None:
+            supp.append(fmt_biomarker("Alkaline Phosphatase"))
+        if tbili is not None:
+            supp.append(fmt_biomarker("Total Bilirubin"))
+        if dbili is not None:
+            supp.append(fmt_biomarker("Direct Bilirubin"))
+
+        inferred.append(LabDiseaseInference(
+            disease="Cholestasis / Obstructive Biliary Disease",
+            likelihood="high",
+            severity="severe" if (tbili and tbili >= 5.0) else "moderate",
+            pathophysiology="Impairment of bile excretion secondary to extrahepatic ductal stone/stricture or intrahepatic canalicular injury, causing accumulation of bile acids, alkaline phosphatase, and conjugated bilirubin.",
+            clinical_rationale="Concomitant elevation of cholestatic enzymes (ALP) and bilirubin.",
+            supporting_biomarkers=supp,
+            suggested_confirmatory_workup=[
+                "Right upper quadrant abdominal ultrasound for biliary ductal dilatation or cholelithiasis",
+                "Magnetic resonance cholangiopancreatography (MRCP)",
+                "Fractionated bilirubin and serum lipase",
+            ],
+        ))
+
+    # 18. Acute Pancreatitis
+    if (lipase is not None and lipase >= 180.0) or (amylase is not None and amylase >= 300.0):
+        supp = []
+        if lipase is not None:
+            supp.append(fmt_biomarker("Lipase"))
+        if amylase is not None:
+            supp.append(fmt_biomarker("Amylase"))
+
+        inferred.append(LabDiseaseInference(
+            disease="Acute Pancreatitis",
+            likelihood="high",
+            severity="severe",
+            pathophysiology="Premature intrapancreatic trypsinogen activation within acinar cells causing enzymatic autodigestion, local tissue necrosis, vascular damage, and acute systemic inflammatory mediator release.",
+            clinical_rationale="Pancreatic digestive enzyme elevation exceeding 3x upper limit of normal.",
+            supporting_biomarkers=supp,
+            suggested_confirmatory_workup=[
+                "Abdominal ultrasound to evaluate for gallstone pancreatitis",
+                "Serum triglycerides and calcium levels",
+                "Aggressive isotonic intravenous fluid resuscitation",
+                "Contrast-enhanced abdominal CT if clinical deterioration occurs after 48-72h",
+            ],
+        ))
+
+    # 19. Acute Myocardial Infarction / Myocardial Necrosis
+    trop = trop_i or trop_t
+    if trop is not None and ((trop_i is not None and trop_i > 0.04) or (trop_t is not None and trop_t > 0.01) or get_flag("Troponin I") in ("high", "critical high") or get_flag("Troponin T") in ("high", "critical high")):
+        inferred.append(LabDiseaseInference(
+            disease="Acute Myocardial Infarction / ACS",
+            likelihood="high",
+            severity="critical",
+            pathophysiology="Coronary atherosclerotic plaque rupture with occlusive thrombosis causing cardiomyocyte ischemia, irreversible necrosis, and systemic leakage of high-sensitivity cardiac troponins.",
+            clinical_rationale=f"Elevated high-sensitivity cardiac troponin ({trop:.4f} ng/mL), establishing acute myocardial injury.",
+            supporting_biomarkers=[fmt_biomarker("Troponin I" if trop_i else "Troponin T")],
+            suggested_confirmatory_workup=[
+                "Serial 12-lead ECGs (every 15-30 minutes)",
+                "Repeat high-sensitivity troponin in 1 to 2 hours to evaluate dynamic rise/fall delta",
+                "Emergent cardiology consultation for invasive coronary angiography",
+                "Telemetry cardiac monitoring and guideline-directed medical therapy",
+            ],
+        ))
+
+    # 20. Hypercalcemia
+    if ca is not None and ca > 10.2:
+        is_crit = ca > 13.0
+        inferred.append(LabDiseaseInference(
+            disease="Hypercalcemia",
+            likelihood="high",
+            severity="critical" if is_crit else ("severe" if ca > 12.0 else "moderate"),
+            pathophysiology="Elevation of extracellular calcium concentration secondary to excessive bone resorption (hyperparathyroidism, malignancy) or increased intestinal absorption, diminishing neuromuscular excitability.",
+            clinical_rationale=f"Serum calcium elevated to {ca:.2f} mg/dL (reference limit 10.2 mg/dL).",
+            supporting_biomarkers=[fmt_biomarker("Serum Calcium")],
+            suggested_confirmatory_workup=[
+                "Intact parathyroid hormone (iPTH)",
+                "PTH-related peptide (PTHrP) and 25-OH Vitamin D",
+                "12-lead ECG for shortened QT interval",
+                "Isotonic saline IV volume expansion",
+            ],
+        ))
+
+    # 21. Normal / Unremarkable Laboratory Profile
+    if not inferred:
+        abnormal_results = [r for r in results if r.flag not in ("normal", "unknown")]
+        if not abnormal_results:
+            inferred.append(LabDiseaseInference(
+                disease="Normal / Unremarkable Laboratory Profile",
+                likelihood="high",
+                severity="mild",
+                pathophysiology="Normal biochemical and cellular physiological homeostasis with all evaluated parameters falling within established biological reference intervals.",
+                clinical_rationale=f"All {len(results)} evaluated laboratory analytes are within normal physiological reference ranges without critical or abnormal flags.",
+                supporting_biomarkers=["All tested analytes within normal limits"],
+                suggested_confirmatory_workup=[
+                    "Routine preventative health maintenance",
+                    "Periodic re-evaluation as clinically indicated",
+                ],
+            ))
+
+    # Sort inferred diseases: critical first, then severe, moderate, mild
+    severity_order = {"critical": 0, "severe": 1, "moderate": 2, "mild": 3}
+    inferred.sort(key=lambda d: severity_order.get(d.severity, 99))
+
+    return inferred
+
+
+def generate_lab_clinical_summary(inferred: List[LabDiseaseInference], total_tests: int) -> str:
+    """Generate concise, physician-grade laboratory assessment summary."""
+    if not inferred:
+        return f"Laboratory evaluation of {total_tests} standard analytes demonstrates normal physiological parameters without acute metabolic or cellular dysfunction."
+    if len(inferred) == 1 and inferred[0].disease == "Normal / Unremarkable Laboratory Profile":
+        return f"Laboratory evaluation of {total_tests} standard analytes demonstrates normal physiological parameters without acute metabolic or cellular dysfunction."
+
+    top_d = inferred[0]
+    critical_alerts = [d.disease for d in inferred if d.severity == "critical"]
+    crit_clause = f" Critical alert: urgent clinical intervention required for {', '.join(critical_alerts)}." if critical_alerts else ""
+    other_d = [d.disease for d in inferred[1:3] if d.disease != top_d.disease]
+    other_clause = f" Additional laboratory findings indicate {', '.join(other_d)}." if other_d else ""
+    conf_str = f" ({top_d.confidence_score * 100.0:.1f}% neural confidence)" if getattr(top_d, "confidence_score", None) is not None else ""
+
+    return f"Laboratory analysis indicates findings characteristic of {top_d.disease}{conf_str}.{crit_clause}{other_clause} Targeted confirmatory workup and guided clinical monitoring are recommended."
+
+
 def run_lab_agent(case_input: CaseInput) -> LabReport:
-    """Execute complete deterministic laboratory evaluation pipeline."""
+    """Execute complete laboratory evaluation pipeline using trained ClinicalLabNet neural model."""
     has_text = bool(case_input.lab_text and case_input.lab_text.strip())
     has_files = bool(case_input.lab_paths and len(case_input.lab_paths) > 0)
 
@@ -639,6 +1207,8 @@ def run_lab_agent(case_input: CaseInput) -> LabReport:
             status="skipped",
             results=[],
             patterns=[],
+            inferred_diseases=[],
+            clinical_summary="",
             unparsed_lines=[],
             message="No laboratory data provided for this case.",
         )
@@ -687,8 +1257,22 @@ def run_lab_agent(case_input: CaseInput) -> LabReport:
 
     patterns = evaluate_patterns(parsed_results)
 
+    # Neural multi-label disease inference using trained ClinicalLabNet PyTorch deep learning model
+    inferred_diseases: List[LabDiseaseInference] = []
+    try:
+        from medagent.models.lab_net import infer_diseases_with_lab_net
+        inferred_diseases = infer_diseases_with_lab_net(parsed_results, case_input.patient_sex)
+    except Exception as e:
+        logger.warning("Neural lab model inference failed, falling back to clinical logic: %s", e)
+        inferred_diseases = []
+
+    if not inferred_diseases:
+        inferred_diseases = infer_laboratory_diseases(parsed_results, case_input.patient_sex)
+
+    clinical_summary = generate_lab_clinical_summary(inferred_diseases, len(parsed_results))
+
     status_val = "ok" if parsed_results else ("error" if not unparsed else "ok")
-    msg = f"Processed {len(parsed_results)} laboratory tests, synthesized {len(patterns)} clinical patterns."
+    msg = f"Processed {len(parsed_results)} laboratory tests, synthesized {len(patterns)} clinical patterns, inferred {len(inferred_diseases)} disease diagnoses."
     if notes:
         msg += " " + " ".join(notes)
 
@@ -696,6 +1280,8 @@ def run_lab_agent(case_input: CaseInput) -> LabReport:
         status=status_val,
         results=parsed_results,
         patterns=patterns,
+        inferred_diseases=inferred_diseases,
+        clinical_summary=clinical_summary,
         unparsed_lines=unparsed,
         message=msg,
     )

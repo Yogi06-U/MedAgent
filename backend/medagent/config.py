@@ -38,8 +38,9 @@ class Settings(BaseSettings):
     PINECONE_INDEX: str = ""
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
-    # Imaging Model Settings
+    # Imaging & Laboratory Model Settings
     TORCHXRAYVISION_WEIGHTS: str = "densenet121-res224-all"
+    CLINICAL_LAB_WEIGHTS: Path = (BASE_DIR / "data" / "weights" / "clinical_lab_model.pt")
     ENABLE_MEDGEMMA: bool = False
     MEDGEMMA_MODEL_ID: str = "google/medgemma-4b-it"
 

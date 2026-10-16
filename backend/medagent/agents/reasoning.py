@@ -19,6 +19,148 @@ from medagent.schemas import (
 
 logger = logging.getLogger("medagent.reasoning")
 
+# Clinical disease profiles detailing underlying pathophysiology and mechanism
+CONDITION_CLINICAL_PROFILES: Dict[str, Dict[str, str]] = {
+    "Community-Acquired Pneumonia": {
+        "mechanism": "Acute microbial infection triggering inflammatory exudation and leukocyte accumulation in pulmonary alveolar spaces, causing parenchymal consolidation and impaired oxygen diffusion.",
+    },
+    "Pleural Effusion": {
+        "mechanism": "Pathological accumulation of fluid in the pleural cavity due to elevated hydrostatic pressure, decreased oncotic pressure, or increased capillary permeability from pleural inflammation or malignancy.",
+    },
+    "Pneumothorax": {
+        "mechanism": "Collection of free air in the pleural space disrupting negative intrapleural pressure, resulting in partial or complete ipsilateral lung collapse and ventilation-perfusion mismatch.",
+    },
+    "Congestive Heart Failure / Pulmonary Edema": {
+        "mechanism": "Left ventricular systolic or diastolic failure elevating left atrial and pulmonary venous pressures, driving transudation of fluid into pulmonary interstitial and alveolar compartments.",
+    },
+    "Cardiomegaly": {
+        "mechanism": "Pathological enlargement of the cardiac silhouette resulting from compensatory myocardial hypertrophy or ventricular cavity dilation secondary to chronic pressure or volume overload.",
+    },
+    "Acute Kidney Injury": {
+        "mechanism": "Abrupt decline in glomerular filtration rate leading to retention of nitrogenous wastes (azotemia), dysregulation of fluid balance, and impaired electrolyte and acid-base excretion.",
+    },
+    "Chronic Kidney Disease": {
+        "mechanism": "Progressive, irreversible structural or functional renal parenchyma damage lasting >3 months characterized by nephron loss, glomerulosclerosis, tubulointerstitial fibrosis, and loss of endocrine kidney function.",
+    },
+    "Severe Hyperkalemia": {
+        "mechanism": "Critical extracellular potassium elevation shifting cardiac resting membrane potential toward threshold, causing delayed cardiac conduction, peaked T waves, and high risk of ventricular fibrillation or asystole.",
+    },
+    "Hypokalemia": {
+        "mechanism": "Depletion of serum potassium causing hyperpolarization of excitable cell membranes, impaired neuromuscular transmission, cardiac repolarization abnormalities (prominent U waves), and increased arrhythmia susceptibility.",
+    },
+    "Hyponatremia": {
+        "mechanism": "Hypotonic imbalance of body water relative to sodium content producing an osmotic gradient that drives water into intracellular compartments, predisposing to cerebral astrocyte edema and neurological dysfunction.",
+    },
+    "Microcytic Iron Deficiency Anemia": {
+        "mechanism": "Inadequate iron stores restricting erythroblast heme and hemoglobin synthesis, resulting in microcytic, hypochromic erythrocytes with reduced systemic oxygen delivery.",
+    },
+    "Macrocytic / Megaloblastic Anemia": {
+        "mechanism": "Deficiency of vitamin B12 or folate disrupting purine/thymidylate synthesis and erythroblast nuclear maturation, leading to nuclear-cytoplasmic dyssynchrony and abnormally large erythrocytes.",
+    },
+    "Normocytic Anemia of Chronic Disease": {
+        "mechanism": "Chronic inflammation-induced hepcidin elevation sequestering iron inside macrophages, blunting renal erythropoietin response, and shortening red blood cell survival.",
+    },
+    "Type 2 Diabetes Mellitus": {
+        "mechanism": "Chronic metabolic disorder characterized by peripheral insulin resistance combined with progressive pancreatic beta-cell secretory failure, causing sustained hyperglycemia and micro-/macrovascular risk.",
+    },
+    "Diabetic Ketoacidosis": {
+        "mechanism": "Profound insulin deficiency with excessive counter-regulatory hormone surge driving unchecked lipolysis, hepatic free fatty acid oxidation into ketoacids, high anion gap metabolic acidosis, and severe osmotic dehydration.",
+    },
+    "Hypoglycemia": {
+        "mechanism": "Critically low blood glucose (<70 mg/dL) depriving brain tissue of obligatory energy substrate, initiating autonomic counter-regulatory catecholamine discharge and neuroglycopenic symptoms.",
+    },
+    "Acute Hepatocellular Injury": {
+        "mechanism": "Direct toxic, ischemic, or immunologic destruction of hepatocytes causing leakage of intracellular aminotransferases (ALT, AST) into systemic circulation and acute hepatic metabolic decompensation.",
+    },
+    "Cholestasis / Obstructive Biliary Disease": {
+        "mechanism": "Mechanical obstruction or biochemical failure of biliary secretion resulting in retrograde retention of conjugated bilirubin, bile acids, and alkaline phosphatase in hepatic parenchyma and systemic circulation.",
+    },
+    "Acute Pancreatitis": {
+        "mechanism": "Premature intrapancreatic trypsinogen activation within acinar cells causing enzymatic autodigestion, local tissue necrosis, vascular damage, and acute systemic inflammatory mediator release.",
+    },
+    "Acute Myocardial Infarction / ACS": {
+        "mechanism": "Coronary atherosclerotic plaque rupture with occlusive thrombosis causing transmural or subendocardial ischemia, cardiomyocyte necrosis, and release of cardiac troponin into circulation.",
+    },
+    "Pulmonary Embolism": {
+        "mechanism": "Mechanical occlusion of pulmonary arterial vasculature by dislodged venous thromboemboli causing alveolar dead space expansion, right ventricular afterload spike, and hypoxemia.",
+    },
+    "Sepsis / Severe Systemic Infection": {
+        "mechanism": "Dysregulated, life-threatening host inflammatory and endothelial response to infection causing diffuse microvascular leakage, cellular metabolic failure, tissue hypoperfusion, and multiorgan dysfunction.",
+    },
+    "COPD Acute Exacerbation": {
+        "mechanism": "Acute intensification of lower airway inflammation and bronchial hyperresponsiveness causing dynamic hyperinflation, increased air trapping, mucus hypersecretion, and acute gas exchange deterioration.",
+    },
+    "Hypercalcemia": {
+        "mechanism": "Elevation of extracellular calcium concentration secondary to increased osteoclastic bone resorption or intestinal absorption, lowering cell membrane excitability and impairing renal concentrating ability.",
+    },
+    "Metabolic Acidosis": {
+        "mechanism": "Primary fall in serum bicarbonate concentration due to excessive accumulation of endogenous/exogenous fixed acids or loss of bicarbonate, prompting respiratory compensation with hyperventilation.",
+    },
+    "No Acute Cardiopulmonary Process Identified": {
+        "mechanism": "Normal cardiopulmonary anatomical and physiological status without evidence of parenchymal infiltration, pleural fluid, pulmonary vascular congestion, or chamber dilation.",
+    },
+    "Preventative Health Maintenance / Baseline Normal": {
+        "mechanism": "Physiological baseline within expected limits without evidence of active systemic illness, organ dysfunction, or acute metabolic decompensation.",
+    },
+    "Preventative Health Maintenance": {
+        "mechanism": "Physiological baseline within expected limits without evidence of active systemic illness, organ dysfunction, or acute metabolic decompensation.",
+    },
+    "Acute Viral Bronchitis / Atypical Infection": {
+        "mechanism": "Transient inflammatory response limited to the tracheobronchial tree without dense alveolar consolidation or parenchymal destruction.",
+    },
+    "Hypertensive Heart Disease / Left Ventricular Hypertrophy": {
+        "mechanism": "Concentric remodeling and hypertrophy of left ventricular cardiomyocytes in response to sustained systemic vascular afterload.",
+    },
+    "Prerenal Azotemia / Dehydration": {
+        "mechanism": "Decreased effective circulating renal blood volume reducing glomerular perfusion pressure without structural parenchymal or tubular epithelial injury.",
+    },
+    "Unstable Angina / Acute Coronary Syndrome": {
+        "mechanism": "Transient coronary artery hypoperfusion causing reversible myocardial ischemia without permanent cardiomyocyte necrosis or biomarker elevation.",
+    },
+    "Choledocholithiasis / Biliary Stricture": {
+        "mechanism": "Partial or complete physical obstruction of the extrahepatic common bile duct by calculi or stricture causing proximal biliary hypertension and cholestasis.",
+    },
+    "Toxic / Drug-Induced Liver Injury (DILI)": {
+        "mechanism": "Xenobiotic or drug-metabolite induced direct hepatocyte necrosis or idiosyncratic immunoallergic injury.",
+    },
+    "Acute Cholecystitis / Biliary Colic": {
+        "mechanism": "Cystic duct obstruction by gallstones leading to gallbladder distension, mucosal ischemia, chemical inflammation, and secondary bacterial infection.",
+    },
+    "Pseudohyperkalemia / Hemolyzed Sample Artifact": {
+        "mechanism": "In vitro mechanical rupture of erythrocytes during blood drawing or processing releasing intracellular potassium into plasma, producing artifactual elevation.",
+    },
+    "Gastrointestinal or Renal Potassium Wasting": {
+        "mechanism": "Loss of total body potassium via urinary excretion (diuretics, hyperaldosteronism) or gastrointestinal tract (diarrhea, vomiting).",
+    },
+    "Syndrome of Inappropriate ADH (SIADH) vs Hypovolemia": {
+        "mechanism": "Unregulated non-osmotic secretion of antidiuretic hormone leading to excessive water retention and dilutional hyponatremia.",
+    },
+    "Hyperosmolar Hyperglycemic State (HHS)": {
+        "mechanism": "Severe relative insulin deficiency and profound hyperosmolality causing severe osmotic diuresis and dehydration without ketoacidosis.",
+    },
+    "Impaired Fasting Glucose / Metabolic Syndrome": {
+        "mechanism": "Early insulin resistance with elevated hepatic glucose output and borderline beta-cell compensation.",
+    },
+    "Primary Hyperparathyroidism vs Malignancy": {
+        "mechanism": "Excess autonomous parathyroid hormone secretion or tumor production of PTH-related protein stimulating bone osteoclast resorption and renal calcium reabsorption.",
+    },
+    "High Anion Gap vs Non-Anion Gap Metabolic Acidosis": {
+        "mechanism": "Acid-base disturbance driven either by unmeasured organic anions (lactate, ketones) or hyperchloremic bicarbonate wasting.",
+    },
+    "Thalassemia Minor / Anemia of Chronic Disease": {
+        "mechanism": "Genetic reduction in globin chain synthesis or inflammatory iron restriction producing disproportionate microcytosis.",
+    },
+    "Vitamin B12 or Folate Deficiency Anemia": {
+        "mechanism": "Impaired DNA synthesis in hematopoietic precursors causing megaloblastic maturation arrest and macrocytosis.",
+    },
+    "Anemia of Chronic Kidney Disease or Inflammation": {
+        "mechanism": "Blunted renal erythropoietin secretion compounded by inflammatory hepcidin suppression of iron availability.",
+    },
+    "Systemic Inflammatory Response Syndrome (SIRS) of Non-Infectious Origin": {
+        "mechanism": "Widespread non-microbial systemic cytokine release (e.g. pancreatitis, trauma, tissue ischemia) causing autonomic and endothelial activation.",
+    },
+}
+
 # Catalog of >= 25 conditions evaluated by rule engine
 CONDITIONS_CATALOG: Dict[str, Dict[str, Any]] = {
     "Community-Acquired Pneumonia": {
@@ -529,6 +671,18 @@ def _check_cardinal_requirement(
     imaging_findings_dict: Dict[str, float],
 ) -> bool:
     """Ensure a proposed condition is anchored in essential clinical criteria."""
+    # Guard against false-positive acute pneumonia / sepsis on routine or asymptomatic examinations
+    is_explicitly_asymptomatic = any(
+        phrase in text_lower for phrase in [
+            "asymptomatic", "no complaints", "routine checkup", "routine physical",
+            "feeling well", "denies all symptoms", "no acute symptoms", "baseline normal",
+            "well-appearing", "unremarkable exam", "routine screening", "annual exam"
+        ]
+    )
+    if cond_name in ("Community-Acquired Pneumonia", "Sepsis / Severe Systemic Infection"):
+        if is_explicitly_asymptomatic and not any("leukocytosis" in p.lower() or "inflammatory" in p.lower() for p in lab_pattern_names):
+            return False
+
     reqs = CARDINAL_REQUIREMENTS.get(cond_name)
     if not reqs:
         return True
@@ -561,10 +715,11 @@ def run_rule_engine(
     """Execute weighted scoring rule engine evaluating >=25 clinical conditions."""
     text_lower = case_input.clinical_text.lower()
 
-    # Pre-parse lab pattern names
+    # Pre-parse lab pattern names and inferred lab diseases
     lab_pattern_names = set()
     if lab_report and lab_report.status == "ok":
         lab_pattern_names = {p.name for p in lab_report.patterns}
+        lab_pattern_names.update({d.disease for d in lab_report.inferred_diseases})
 
     # Pre-parse imaging findings
     imaging_findings_dict: Dict[str, float] = {}
@@ -705,9 +860,13 @@ def run_rule_engine(
                 if len(cited_ids) >= 2:
                     break
 
-        rationale = f"Presentation supported by {', '.join(item['supporting']) if item['supporting'] else 'clinical features'}."
+        profile = CONDITION_CLINICAL_PROFILES.get(item["condition"])
+        mechanism_text = f" Disease mechanism: {profile['mechanism']}" if profile else ""
+        rationale = f"Presentation is clinically indicative of {item['condition']}, supported by {', '.join(item['supporting']) if item['supporting'] else 'clinical examination'}."
         if item["against"]:
-            rationale += f" Discordant factors: {item['against']}."
+            rationale += f" Discriminating factors: {item['against']}."
+        if mechanism_text:
+            rationale += mechanism_text
 
         differentials.append(
             Differential(
@@ -723,14 +882,33 @@ def run_rule_engine(
     # Synthesis summary (<= 4 sentences)
     top_cond = differentials[0].condition
     top_findings = differentials[0].supporting_findings[:3]
-    findings_clause = f" including {', '.join(top_findings)}" if top_findings else ""
-    summary_sentences = [
-        f"Patient clinical evaluation demonstrates features consistent with {top_cond}.",
-        f"Diagnostic synthesis is supported by key multimodal findings{findings_clause}.",
-        f"Differential considerations include {', '.join([d.condition for d in differentials[1:3]])}." if len(differentials) > 1 else "",
-        "Targeted diagnostic workup and serial clinical monitoring are recommended to confirm etiology and guide definitive management.",
-    ]
-    summary = " ".join([s for s in summary_sentences if s])
+    top_profile = CONDITION_CLINICAL_PROFILES.get(top_cond)
+
+    if top_cond in ("No Acute Cardiopulmonary Process Identified", "Preventative Health Maintenance / Baseline Normal", "Preventative Health Maintenance"):
+        summary_sentences = [
+            "Clinical evaluation and imaging review demonstrate no acute cardiopulmonary pathology or acute organ dysfunction.",
+            "Cardiothoracic structures, pulmonary parenchyma, and baseline diagnostic parameters remain within normal limits.",
+            "Routine preventative health maintenance and age-appropriate monitoring are recommended.",
+        ]
+    else:
+        mechanism_desc = f", characterized pathophysiologically by {top_profile['mechanism'].rstrip('.').lower()}." if top_profile else "."
+        s1 = f"Clinical evaluation indicates features consistent with {top_cond}{mechanism_desc}"
+        
+        # Explicitly mention significant imaging findings if present
+        img_mention = ""
+        if imaging_findings_dict:
+            sig_findings = [f"{k} ({prob:.1%})" for k, prob in imaging_findings_dict.items() if prob >= 0.50]
+            if sig_findings:
+                img_mention = f" Concurrently, chest radiography identifies {', '.join(sig_findings)}."
+
+        diff_names = [d.condition for d in differentials[1:3]]
+        diff_clause = f", while secondary differential considerations include {', '.join(diff_names)}" if diff_names else ""
+        findings_clause = f"Key supporting clinical indicators include {', '.join(top_findings)}" if top_findings else "Clinical assessment is guided by presenting signs"
+        s2 = f"{findings_clause}{diff_clause}.{img_mention}"
+        
+        s3 = "Targeted diagnostic workup and guided serial clinical monitoring are recommended to establish definitive management."
+        summary_sentences = [s1, s2, s3]
+    summary = " ".join(summary_sentences)
 
     # Workup aggregate
     combined_workup = []
@@ -799,16 +977,18 @@ def _build_llm_prompt(
     lab_text = "\n".join([f"- {r.test}: {r.value} {r.unit} ({r.flag})" for r in (lab_report.results if lab_report else [])])
 
     return f"""
-You are MedAgent's Clinical Reasoning specialist. Synthesize the provided multimodal clinical data into a structured ClinicalDraft JSON.
+You are MedAgent's Clinical Reasoning specialist. Synthesize the provided clinical data into a structured ClinicalDraft JSON.
 Rules:
-1. Use ONLY the provided data.
-2. Cite ONLY existing evidence IDs from the Evidence list ({[e.id for e in (rag_report.evidence if rag_report else [])]}).
-3. Use cautious phrasing (e.g. 'suggests', 'consistent with'). NEVER state a diagnosis as certain.
-4. DO NOT provide drug doses or dosing schedules.
-5. Return between 2 and 5 ranked differential diagnoses.
-6. Summary must be 4 sentences or fewer.
-7. List discordant findings as uncertainties.
-8. Red flags must highlight acute life threats.
+1. Use ONLY the provided patient data. Explain the underlying disease mechanism and clinical reasons for the primary diagnosis.
+2. DO NOT use robotic meta-language such as 'from the multimodal derivation', 'multimodal data', or 'derivation'. Speak as an objective, expert physician.
+3. Cite ONLY existing evidence IDs from the Evidence list ({[e.id for e in (rag_report.evidence if rag_report else [])]}).
+4. Use cautious phrasing (e.g. 'suggests', 'consistent with'). NEVER state a diagnosis as certain.
+5. DO NOT provide drug doses or dosing schedules.
+6. Return between 2 and 5 ranked differential diagnoses with detailed pathophysiology explanations in their rationale.
+7. Summary must be 4 sentences or fewer and describe the disease mechanism and key clinical reasons.
+8. List discordant findings as uncertainties.
+9. Red flags must highlight acute life threats.
+10. When both Imaging Findings and Laboratory Results are present, you MUST explicitly synthesize both modalities into the summary, differential list, and diagnostic workup.
 {f'Feedback from Safety Review: {feedback}' if feedback else ''}
 
 Patient: Age={case_input.patient_age}, Sex={case_input.patient_sex}

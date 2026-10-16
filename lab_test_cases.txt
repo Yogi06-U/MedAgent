@@ -1,0 +1,543 @@
+================================================================================
+CLINICAL LAB AGENT: COMPREHENSIVE TEST CASES & DISEASE LABEL DIRECTORY
+Project: Medical Multi-Agent Decision Support System
+Model: ClinicalLabNet Deep Neural Network (PyTorch Multi-Label Classifier)
+Trained On: 3,335 Real Patient Hospital Records (Apollo, ILPD, NIDDK, Cleveland, Chang Gung)
+================================================================================
+
+HOW TO USE THESE TEST CASES:
+1. WEB USER INTERFACE:
+   - In the left sidebar ("Case Intake"):
+     a) Paste the "CLINICAL NOTES" into the "Clinical Notes & History" field.
+     b) Paste the "LABORATORY RESULTS" into the "Laboratory Results (Typed or Pasted)" field.
+     c) Enter the Age and Sex (if specified).
+     d) Click "Analyse Case".
+     e) Open the "Laboratory" tab in the main workspace to view parsed analytes, flags,
+        and the "PyTorch Deep Learning" disease inferences with confidence percentages.
+
+2. COMMAND LINE (STANDALONE TRAINING REPO):
+   Run in terminal:
+     cd /home/yogi/lab_agent_training
+     python3 infer.py --demo
+
+3. PYTHON BACKEND SCRIPT:
+   From /home/yogi/Medical:
+     .venv/bin/python3 -c "
+     from backend.medagent.schemas import CaseInput
+     from backend.medagent.agents.lab import run_lab_agent
+     case = CaseInput(case_id='demo', clinical_text='...', lab_text='...')
+     report = run_lab_agent(case)
+     for d in report.inferred_diseases:
+         print(d.disease, d.confidence_score)
+     "
+
+================================================================================
+MASTER DIRECTORY OF 20 TRAINED TARGET DISEASE LABELS
+================================================================================
+ 1. Microcytic Iron Deficiency Anemia           [Severity: MODERATE]
+ 2. Macrocytic / Megaloblastic Anemia          [Severity: MODERATE]
+ 3. Severe Thrombocytopenia                    [Severity: CRITICAL]
+ 4. Acute Kidney Injury / Renal Failure        [Severity: CRITICAL]
+ 5. Severe Hyperkalemia                        [Severity: CRITICAL]
+ 6. Hypokalemia                                [Severity: SEVERE]
+ 7. Diabetic Ketoacidosis (DKA)                [Severity: CRITICAL]
+ 8. Type 2 Diabetes Mellitus / Severe Hyperglycemia [Severity: MODERATE]
+ 9. Severe Hypoglycemia                        [Severity: CRITICAL]
+10. High Anion Gap Metabolic Acidosis          [Severity: CRITICAL]
+11. Hyponatremia                               [Severity: MODERATE]
+12. Hypernatremia / Severe Dehydration         [Severity: SEVERE]
+13. Acute Bacterial Infection / Sepsis Risk    [Severity: CRITICAL]
+14. Acute Hepatocellular Injury / Transaminitis [Severity: SEVERE]
+15. Cholestasis / Obstructive Biliary Disease  [Severity: MODERATE]
+16. Acute Pancreatitis                         [Severity: SEVERE]
+17. Acute Myocardial Infarction / ACS          [Severity: CRITICAL]
+18. Hypercalcemia                              [Severity: SEVERE]
+19. Atherogenic Dyslipidemia                   [Severity: MILD]
+20. Normal / Unremarkable Laboratory Profile   [Severity: MILD / UNREMARKABLE]
+
+================================================================================
+CLINICAL TEST CASES (DETAILED INPUTS & EXPECTED LABELS)
+================================================================================
+
+--------------------------------------------------------------------------------
+TEST CASE 01: Microcytic Iron Deficiency Anemia
+--------------------------------------------------------------------------------
+TARGET LABEL: Microcytic Iron Deficiency Anemia
+SEVERITY: Moderate
+URGENCY: Routine / Soon
+PATIENT: 34-year-old Female
+
+CLINICAL NOTES:
+34yo female presenting for annual physical with 6-month history of progressive fatigue, cold intolerance, lightheadedness on standing, and brittle spoon-shaped nails. Denies overt melena or hematochezia.
+
+LABORATORY RESULTS:
+Hemoglobin: 7.1 g/dL (12.0 - 16.0)
+Hematocrit: 23.4 % (36.0 - 46.0)
+MCV: 66.5 fL (80.0 - 100.0)
+MCH: 21.0 pg (27.0 - 33.0)
+MCHC: 30.2 g/dL (32.0 - 36.0)
+RDW: 18.5 % (11.5 - 14.5)
+Ferritin: 5.2 ng/mL (15.0 - 150.0)
+Platelets: 440 x10^3/uL (150 - 450)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Microcytic Iron Deficiency Anemia (>99% confidence)
+- Supporting Biomarkers: Hemoglobin (CRITICAL LOW), MCV (LOW), Ferritin (LOW), RDW (HIGH)
+- Confirmatory Workup: Total iron binding capacity (TIBC), transferrin saturation, fecal occult blood test (FOBT) / GI endoscopy
+
+
+--------------------------------------------------------------------------------
+TEST CASE 02: Macrocytic / Megaloblastic Anemia
+--------------------------------------------------------------------------------
+TARGET LABEL: Macrocytic / Megaloblastic Anemia
+SEVERITY: Moderate
+URGENCY: Soon
+PATIENT: 62-year-old Male
+
+CLINICAL NOTES:
+62yo male with strict vegan diet presenting with progressive bilateral lower extremity paresthesias, sensory ataxia, loss of vibratory sensation, glossitis, and cognitive slowing.
+
+LABORATORY RESULTS:
+Hemoglobin: 8.4 g/dL (13.5 - 17.5)
+Hematocrit: 25.5 % (41.0 - 53.0)
+MCV: 112.4 fL (80.0 - 100.0)
+MCH: 36.5 pg (27.0 - 33.0)
+RDW: 17.8 % (11.5 - 14.5)
+Vitamin B12: 110 pg/mL (200 - 900)
+Serum Folate: 7.5 ng/mL (3.0 - 20.0)
+WBC: 4.2 x10^3/uL (4.5 - 11.0)
+Platelets: 130 x10^3/uL (150 - 450)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Macrocytic / Megaloblastic Anemia (>95% confidence)
+- Supporting Biomarkers: MCV (HIGH), Vitamin B12 (LOW), Hemoglobin (LOW)
+- Confirmatory Workup: Serum methylmalonic acid (MMA), homocysteine, intrinsic factor antibodies, peripheral blood smear for hypersegmented neutrophils
+
+
+--------------------------------------------------------------------------------
+TEST CASE 03: Severe Thrombocytopenia (Spontaneous Hemorrhage Risk)
+--------------------------------------------------------------------------------
+TARGET LABEL: Severe Thrombocytopenia
+SEVERITY: Critical
+URGENCY: Urgent / Immediate
+PATIENT: 45-year-old Female
+
+CLINICAL NOTES:
+45yo female presenting with acute spontaneous epistaxis, widespread lower extremity petechiae, wet purpura on oral mucosa, and prolonged bleeding from venipuncture site.
+
+LABORATORY RESULTS:
+Platelets: 18 x10^3/uL (150 - 450)
+Hemoglobin: 11.8 g/dL (12.0 - 16.0)
+WBC: 6.5 x10^3/uL (4.5 - 11.0)
+INR: 1.0 (0.8 - 1.2)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Severe Thrombocytopenia (>99% confidence)
+- Supporting Biomarkers: Platelets (CRITICAL LOW)
+- Confirmatory Workup: Peripheral blood smear to rule out EDTA pseudothrombocytopenia, anti-platelet antibody screen, bone marrow biopsy if refractory, strict bleeding precautions
+
+
+--------------------------------------------------------------------------------
+TEST CASE 04: Acute Kidney Injury & Severe Hyperkalemia
+--------------------------------------------------------------------------------
+TARGET LABELS:
+1. Acute Kidney Injury / Renal Failure
+2. Severe Hyperkalemia
+SEVERITY: Critical
+URGENCY: Urgent / Emergency
+PATIENT: 72-year-old Male
+
+CLINICAL NOTES:
+72yo male with type 2 diabetes and hypertension presenting with progressive lethargy, marked oliguria (<300 mL urine in 24 hours), generalized muscle weakness, and nausea. Currently prescribed lisinopril and spironolactone.
+
+LABORATORY RESULTS:
+Serum Creatinine: 4.8 mg/dL (0.7 - 1.3)
+Blood Urea Nitrogen (BUN): 72 mg/dL (7 - 20)
+eGFR: 10 mL/min/1.73m2 (>60)
+Potassium: 6.5 mEq/L (3.5 - 5.0)
+Sodium: 131 mEq/L (135 - 145)
+Bicarbonate: 15 mEq/L (22 - 29)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Diseases:
+  * Acute Kidney Injury / Renal Failure (>99% confidence)
+  * Severe Hyperkalemia (>95% confidence)
+- Supporting Biomarkers: Creatinine (CRITICAL HIGH), BUN (HIGH), Potassium (CRITICAL HIGH), eGFR (CRITICAL LOW)
+- Confirmatory Workup: Immediate 12-lead ECG for peaked T waves / sine-wave arrhythmia, IV calcium gluconate, insulin + dextrose, renal ultrasound, nephrology consult for emergent hemodialysis
+
+
+--------------------------------------------------------------------------------
+TEST CASE 05: Severe Hypokalemia & Cardiac Arrhythmia Risk
+--------------------------------------------------------------------------------
+TARGET LABEL: Hypokalemia
+SEVERITY: Severe
+URGENCY: Urgent
+PATIENT: 54-year-old Female
+
+CLINICAL NOTES:
+54yo female on high-dose loop diuretics for heart failure presenting with profound lower extremity muscle cramping, ascending flaccid muscle weakness, palpitations, and hyporeflexia.
+
+LABORATORY RESULTS:
+Potassium: 2.4 mEq/L (3.5 - 5.0)
+Magnesium: 1.3 mg/dL (1.7 - 2.2)
+Sodium: 138 mEq/L (135 - 145)
+Chloride: 92 mEq/L (96 - 106)
+Bicarbonate: 32 mEq/L (22 - 29)
+Creatinine: 1.0 mg/dL (0.7 - 1.3)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Hypokalemia (>98% confidence)
+- Supporting Biomarkers: Potassium (CRITICAL LOW), Magnesium (LOW)
+- Confirmatory Workup: Continuous cardiac telemetry, 12-lead ECG for U waves and QT prolongation, intravenous potassium chloride repletion with concurrent magnesium sulfate administration
+
+
+--------------------------------------------------------------------------------
+TEST CASE 06: Diabetic Ketoacidosis (DKA) & High Anion Gap Acidosis
+--------------------------------------------------------------------------------
+TARGET LABELS:
+1. Diabetic Ketoacidosis (DKA)
+2. High Anion Gap Metabolic Acidosis
+SEVERITY: Critical
+URGENCY: Urgent / Emergency
+PATIENT: 24-year-old Male
+
+CLINICAL NOTES:
+24yo male with type 1 diabetes presenting with 2 days of severe nausea, vomiting, diffuse abdominal pain, polydipsia, rapid deep breathing (Kussmaul respirations) with fruity acetone breath odor, and somnolence.
+
+LABORATORY RESULTS:
+Random Glucose: 485 mg/dL (70 - 140)
+HbA1c: 13.2 % (4.0 - 5.6)
+Sodium: 128 mEq/L (135 - 145)
+Potassium: 5.6 mEq/L (3.5 - 5.0)
+Chloride: 94 mEq/L (96 - 106)
+Bicarbonate: 8 mEq/L (22 - 29)
+Blood Urea Nitrogen: 38 mg/dL (7 - 20)
+Lactate: 3.4 mmol/L (0.5 - 2.0)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Diseases:
+  * Diabetic Ketoacidosis (DKA) (>99% confidence)
+  * High Anion Gap Metabolic Acidosis (>95% confidence)
+- Supporting Biomarkers: Glucose (CRITICAL HIGH), Bicarbonate (CRITICAL LOW), Anion Gap = 26 mEq/L (HIGH)
+- Confirmatory Workup: Serum beta-hydroxybutyrate, arterial blood gas (ABG), aggressive IV isotonic fluid repletion, continuous regular insulin infusion protocol, serial hourly potassium monitoring
+
+
+--------------------------------------------------------------------------------
+TEST CASE 07: Type 2 Diabetes Mellitus / Severe Hyperglycemia
+--------------------------------------------------------------------------------
+TARGET LABEL: Type 2 Diabetes Mellitus / Severe Hyperglycemia
+SEVERITY: Moderate
+URGENCY: Soon
+PATIENT: 58-year-old Male
+
+CLINICAL NOTES:
+58yo male with obesity (BMI 34) presenting with 4-month history of polyuria, polydipsia, nocturia 4 times nightly, blurred vision, and persistent bilateral candidal intertrigo.
+
+LABORATORY RESULTS:
+Fasting Glucose: 245 mg/dL (70 - 99)
+HbA1c: 10.4 % (4.0 - 5.6)
+Total Cholesterol: 240 mg/dL (<200)
+Triglycerides: 280 mg/dL (<150)
+HDL Cholesterol: 34 mg/dL (>40)
+Creatinine: 1.0 mg/dL (0.7 - 1.3)
+eGFR: 82 mL/min/1.73m2 (>60)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Type 2 Diabetes Mellitus / Severe Hyperglycemia (>99% confidence)
+- Secondary Disease: Atherogenic Dyslipidemia
+- Supporting Biomarkers: Fasting Glucose (HIGH), HbA1c (CRITICAL HIGH), Triglycerides (HIGH)
+- Confirmatory Workup: Spot urine albumin-to-creatinine ratio (uACR), dilated fundoscopic retinal examination, comprehensive diabetic foot inspection, initiation of antihyperglycemic pharmacotherapy
+
+
+--------------------------------------------------------------------------------
+TEST CASE 08: Severe Hypoglycemia (Acute Neuroglycopenia)
+--------------------------------------------------------------------------------
+TARGET LABEL: Severe Hypoglycemia
+SEVERITY: Critical
+URGENCY: Urgent / Immediate
+PATIENT: 68-year-old Female
+
+CLINICAL NOTES:
+68yo female with diabetes taking glimepiride and insulin glargine, found by family diaphoresis, tremors, acute confusion, slurred speech, and lethargy following skipped lunch.
+
+LABORATORY RESULTS:
+Random Glucose: 34 mg/dL (70 - 140)
+Sodium: 138 mEq/L (135 - 145)
+Potassium: 4.1 mEq/L (3.5 - 5.0)
+Creatinine: 1.1 mg/dL (0.7 - 1.3)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Severe Hypoglycemia (>99% confidence)
+- Supporting Biomarkers: Glucose (CRITICAL LOW)
+- Confirmatory Workup: Immediate bedside administration of 25-50 g IV 50% dextrose (D50W) or 1 mg IM glucagon, continuous dextrose infusion, reconciliation of secretagogue/insulin dosages
+
+
+--------------------------------------------------------------------------------
+TEST CASE 09: Acute Hepatocellular Injury & Transaminitis
+--------------------------------------------------------------------------------
+TARGET LABEL: Acute Hepatocellular Injury / Transaminitis
+SEVERITY: Severe
+URGENCY: Urgent
+PATIENT: 42-year-old Male
+
+CLINICAL NOTES:
+42yo male presenting with acute right upper quadrant abdominal tenderness, profound fatigue, nausea, vomiting, dark tea-colored urine, and light stools following ingestion of high-dose acetaminophen.
+
+LABORATORY RESULTS:
+ALT: 740 U/L (7 - 56)
+AST: 680 U/L (10 - 40)
+Total Bilirubin: 3.8 mg/dL (0.2 - 1.2)
+Direct Bilirubin: 2.6 mg/dL (0.0 - 0.3)
+Alkaline Phosphatase (ALP): 180 U/L (44 - 147)
+Albumin: 3.4 g/dL (3.5 - 5.0)
+INR: 1.6 (0.8 - 1.2)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Acute Hepatocellular Injury / Transaminitis (>99% confidence)
+- Secondary Disease: Cholestasis / Obstructive Biliary Disease
+- Supporting Biomarkers: ALT (CRITICAL HIGH), AST (CRITICAL HIGH), Total Bilirubin (HIGH), INR (HIGH)
+- Confirmatory Workup: Serum acetaminophen concentration, acute viral hepatitis serologies (anti-HAV IgM, HBsAg, anti-HCV), abdominal ultrasound with liver Doppler, IV N-acetylcysteine protocol
+
+
+--------------------------------------------------------------------------------
+TEST CASE 10: Cholestasis & Obstructive Biliary Disease
+--------------------------------------------------------------------------------
+TARGET LABEL: Cholestasis / Obstructive Biliary Disease
+SEVERITY: Moderate
+URGENCY: Soon
+PATIENT: 65-year-old Female
+
+CLINICAL NOTES:
+65yo female presenting with severe generalized pruritus, deep scleral icterus, postprandial right upper quadrant fullness, acholic (clay-colored) stools, and dark urine.
+
+LABORATORY RESULTS:
+Alkaline Phosphatase (ALP): 480 U/L (44 - 147)
+GGT: 320 U/L (9 - 48)
+Total Bilirubin: 7.2 mg/dL (0.2 - 1.2)
+Direct Bilirubin: 5.4 mg/dL (0.0 - 0.3)
+ALT: 85 U/L (7 - 56)
+AST: 78 U/L (10 - 40)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Cholestasis / Obstructive Biliary Disease (>98% confidence)
+- Supporting Biomarkers: Alkaline Phosphatase (CRITICAL HIGH), Direct Bilirubin (CRITICAL HIGH), Total Bilirubin (HIGH), GGT (HIGH)
+- Confirmatory Workup: Right upper quadrant abdominal ultrasound or MRCP (magnetic resonance cholangiopancreatography) for common bile duct dilation and choledocholithiasis
+
+
+--------------------------------------------------------------------------------
+TEST CASE 11: Acute Pancreatitis
+--------------------------------------------------------------------------------
+TARGET LABEL: Acute Pancreatitis
+SEVERITY: Severe
+URGENCY: Urgent
+PATIENT: 47-year-old Male
+
+CLINICAL NOTES:
+47yo male presenting with sudden onset of severe, unrelenting epigastric pain radiating through to the mid-back, exacerbated by lying supine, accompanied by persistent vomiting and abdominal distension.
+
+LABORATORY RESULTS:
+Lipase: 720 U/L (10 - 140)
+Amylase: 480 U/L (30 - 110)
+WBC: 15.8 x10^3/uL (4.5 - 11.0)
+Neutrophils: 84 % (40 - 70)
+Blood Urea Nitrogen: 28 mg/dL (7 - 20)
+Serum Calcium: 8.1 mg/dL (8.5 - 10.5)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Acute Pancreatitis (>99% confidence)
+- Supporting Biomarkers: Lipase (CRITICAL HIGH - >5x ULN), Amylase (CRITICAL HIGH), WBC (HIGH)
+- Confirmatory Workup: Contrast-enhanced abdominal CT (if clinical ambiguity or after 48-72h for necrosis staging), aggressive isotonic crystalloid resuscitation, enteral nutrition planning
+
+
+--------------------------------------------------------------------------------
+TEST CASE 12: Acute Myocardial Infarction / ACS
+--------------------------------------------------------------------------------
+TARGET LABEL: Acute Myocardial Infarction / ACS
+SEVERITY: Critical
+URGENCY: Urgent / Emergency
+PATIENT: 63-year-old Male
+
+CLINICAL NOTES:
+63yo male with tobacco dependence and hypertension presenting with 2 hours of crushing retrosternal chest pressure radiating to the left jaw and shoulder, associated with diaphoresis, nausea, and dyspnea.
+
+LABORATORY RESULTS:
+Troponin I: 4.8 ng/mL (0.0 - 0.04)
+Troponin T: 1.2 ng/mL (0.0 - 0.01)
+CK-MB: 48 ng/mL (0 - 5)
+Fasting Glucose: 165 mg/dL (70 - 99)
+WBC: 12.4 x10^3/uL (4.5 - 11.0)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Acute Myocardial Infarction / ACS (>99% confidence)
+- Supporting Biomarkers: Troponin I (CRITICAL HIGH), Troponin T (CRITICAL HIGH)
+- Confirmatory Workup: Immediate 12-lead ECG, activate cardiac catheterization laboratory for emergency primary PCI, dual antiplatelet therapy (aspirin + P2Y12 inhibitor), unfractionated heparin, continuous telemetry
+
+
+--------------------------------------------------------------------------------
+TEST CASE 13: Acute Bacterial Infection / Sepsis Risk
+--------------------------------------------------------------------------------
+TARGET LABELS:
+1. Acute Bacterial Infection / Sepsis Risk
+2. High Anion Gap Metabolic Acidosis
+SEVERITY: Critical
+URGENCY: Urgent / Emergency
+PATIENT: 74-year-old Female
+
+CLINICAL NOTES:
+74yo female from long-term care facility presenting with fever (39.2°C), hypothermia following rigors, marked tachypnea (RR 28/min), hypotension (BP 82/50 mmHg), altered mental status, and productive cough.
+
+LABORATORY RESULTS:
+WBC: 23.4 x10^3/uL (4.5 - 11.0)
+Neutrophils: 89 % (40 - 70)
+Procalcitonin: 9.6 ng/mL (<0.5)
+CRP: 165 mg/L (<10)
+Serum Lactate: 4.6 mmol/L (0.5 - 2.0)
+Platelets: 95 x10^3/uL (150 - 450)
+Bicarbonate: 14 mEq/L (22 - 29)
+Serum Creatinine: 2.1 mg/dL (0.7 - 1.3)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Diseases:
+  * Acute Bacterial Infection / Sepsis Risk (>99% confidence)
+  * High Anion Gap Metabolic Acidosis (>90% confidence)
+- Supporting Biomarkers: WBC (CRITICAL HIGH), Procalcitonin (CRITICAL HIGH), Lactate (CRITICAL HIGH), Platelets (LOW)
+- Confirmatory Workup: 2 sets of blood cultures prior to antibiotics, broad-spectrum empiric IV antimicrobials within 1 hour, 30 mL/kg IV crystalloid fluid challenge, serial lactate monitoring every 2-4 hours
+
+
+--------------------------------------------------------------------------------
+TEST CASE 14: Severe Hyponatremia (Hypo-osmolality)
+--------------------------------------------------------------------------------
+TARGET LABEL: Hyponatremia
+SEVERITY: Moderate / Severe
+URGENCY: Urgent
+PATIENT: 81-year-old Female
+
+CLINICAL NOTES:
+81yo female on hydrochlorothiazide presenting with unsteadiness, progressive lethargy, confusion, recurrent falls, and nausea over the past week.
+
+LABORATORY RESULTS:
+Sodium: 118 mEq/L (135 - 145)
+Potassium: 3.4 mEq/L (3.5 - 5.0)
+Chloride: 84 mEq/L (96 - 106)
+BUN: 12 mg/dL (7 - 20)
+Serum Creatinine: 0.8 mg/dL (0.7 - 1.3)
+Glucose: 96 mg/dL (70 - 140)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Hyponatremia (>98% confidence)
+- Supporting Biomarkers: Sodium (CRITICAL LOW)
+- Confirmatory Workup: Paired serum and urine osmolality, urine sodium concentration, cautious sodium correction (<8 mEq/L per 24 hours) to prevent central pontine myelinolysis (osmotic demyelination syndrome)
+
+
+--------------------------------------------------------------------------------
+TEST CASE 15: Hypernatremia & Severe Dehydration
+--------------------------------------------------------------------------------
+TARGET LABEL: Hypernatremia / Severe Dehydration
+SEVERITY: Severe
+URGENCY: Urgent
+PATIENT: 79-year-old Male
+
+CLINICAL NOTES:
+79yo male with dementia presenting with reduced fluid intake over 5 days, dry mucous membranes, delayed skin turgor, sunken eyes, resting tachycardia, and profound drowsiness.
+
+LABORATORY RESULTS:
+Sodium: 158 mEq/L (135 - 145)
+Chloride: 118 mEq/L (96 - 106)
+Blood Urea Nitrogen: 46 mg/dL (7 - 20)
+Serum Creatinine: 1.9 mg/dL (0.7 - 1.3)
+Hematocrit: 49.5 % (41.0 - 53.0)
+Potassium: 4.8 mEq/L (3.5 - 5.0)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Hypernatremia / Severe Dehydration (>97% confidence)
+- Supporting Biomarkers: Sodium (CRITICAL HIGH), Chloride (HIGH), BUN/Creatinine Ratio > 20 (Prerenal Azotemia)
+- Confirmatory Workup: Calculation of free water deficit, slow intravenous rehydration with 5% dextrose in water (D5W) or hypotonic saline, strict fluid balance monitoring
+
+
+--------------------------------------------------------------------------------
+TEST CASE 16: Severe Hypercalcemia
+--------------------------------------------------------------------------------
+TARGET LABEL: Hypercalcemia
+SEVERITY: Severe
+URGENCY: Urgent
+PATIENT: 66-year-old Female
+
+CLINICAL NOTES:
+66yo female with history of breast carcinoma presenting with profound fatigue, constipation, polyuria, polydipsia, cognitive blunting, and bone pain.
+
+LABORATORY RESULTS:
+Serum Calcium: 13.8 mg/dL (8.5 - 10.5)
+Phosphate: 2.1 mg/dL (2.5 - 4.5)
+Albumin: 3.8 g/dL (3.5 - 5.0)
+Serum Creatinine: 1.6 mg/dL (0.7 - 1.3)
+Potassium: 4.0 mEq/L (3.5 - 5.0)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Hypercalcemia (>99% confidence)
+- Supporting Biomarkers: Serum Calcium (CRITICAL HIGH)
+- Confirmatory Workup: Intact PTH, PTH-related peptide (PTHrP), 25-OH Vitamin D, 12-lead ECG for QT shortening, vigorous IV isotonic saline hydration followed by IV bisphosphonates (zoledronic acid)
+
+
+--------------------------------------------------------------------------------
+TEST CASE 17: Atherogenic Dyslipidemia
+--------------------------------------------------------------------------------
+TARGET LABEL: Atherogenic Dyslipidemia
+SEVERITY: Mild / Moderate
+URGENCY: Routine
+PATIENT: 52-year-old Male
+
+CLINICAL NOTES:
+52yo male with familial history of premature coronary artery disease presenting for cardiovascular risk stratification. Currently asymptomatic with sedentary lifestyle.
+
+LABORATORY RESULTS:
+Total Cholesterol: 268 mg/dL (<200)
+Triglycerides: 320 mg/dL (<150)
+LDL Cholesterol: 174 mg/dL (<100)
+HDL Cholesterol: 32 mg/dL (>40)
+Fasting Glucose: 104 mg/dL (70 - 99)
+HbA1c: 5.9 % (4.0 - 5.6)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Atherogenic Dyslipidemia (>98% confidence)
+- Supporting Biomarkers: Total Cholesterol (HIGH), Triglycerides (HIGH), LDL (HIGH), HDL (LOW)
+- Confirmatory Workup: 10-year ASCVD risk calculation, dietary lifestyle modification, initiation of high-intensity HMG-CoA reductase inhibitor (statin) therapy
+
+
+--------------------------------------------------------------------------------
+TEST CASE 18: Normal / Unremarkable Laboratory Profile (Homeostasis)
+--------------------------------------------------------------------------------
+TARGET LABEL: Normal / Unremarkable Laboratory Profile
+SEVERITY: Mild / Unremarkable Homeostasis
+URGENCY: Routine
+PATIENT: 38-year-old Female
+
+CLINICAL NOTES:
+38yo female presenting for routine annual corporate health checkup. Completely asymptomatic, eats a balanced Mediterranean diet, exercises regularly, takes no medications.
+
+LABORATORY RESULTS:
+Hemoglobin: 13.8 g/dL (12.0 - 16.0)
+WBC: 6.4 x10^3/uL (4.5 - 11.0)
+Platelets: 265 x10^3/uL (150 - 450)
+Fasting Glucose: 86 mg/dL (70 - 99)
+Creatinine: 0.85 mg/dL (0.7 - 1.3)
+Blood Urea Nitrogen: 14 mg/dL (7 - 20)
+Sodium: 141 mEq/L (135 - 145)
+Potassium: 4.1 mEq/L (3.5 - 5.0)
+Chloride: 102 mEq/L (96 - 106)
+Bicarbonate: 25 mEq/L (22 - 29)
+Total Bilirubin: 0.7 mg/dL (0.2 - 1.2)
+ALT: 22 U/L (7 - 56)
+AST: 24 U/L (10 - 40)
+Total Cholesterol: 168 mg/dL (<200)
+Triglycerides: 110 mg/dL (<150)
+HDL Cholesterol: 58 mg/dL (>50)
+LDL Cholesterol: 88 mg/dL (<100)
+
+EXPECTED NEURAL PREDICTION:
+- Primary Disease: Normal / Unremarkable Laboratory Profile (>99% confidence)
+- Supporting Biomarkers: All tested analytes within physiological reference intervals
+- Confirmatory Workup: Routine preventative health maintenance and periodic re-evaluation
+
+================================================================================
+END OF TEST CASES DIRECTORY
+================================================================================

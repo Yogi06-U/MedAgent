@@ -342,44 +342,49 @@ def run_imaging_agent(case_input: CaseInput) -> ImagingReport:
         heatmap_paths: Dict[str, str] = []
 
         # Clinically calibrated candidate selection:
-        # Avoid dataset threshold artifacts for rare classes where baseline noise (< 5% raw) gets scaled to 50%+
+        # Avoid dataset threshold artifacts and suppress baseline noise on normal scans
         candidate_indices = []
         for idx in range(len(pathologies)):
             p_op = float(probs[idx])
             p_raw = float(raw_sigmoids[idx])
             op_thresh = float(model.op_threshs[idx].item()) if hasattr(model, "op_threshs") else 0.05
 
-            if p_op >= 0.50:
-                # For rare pathologies (op_thresh < 0.03 like pneumothorax, emphysema, fibrosis)
-                # require either genuine raw logit elevation (>= 10%) or high op_norm (>= 0.65)
-                if op_thresh < 0.03:
-                    if p_raw >= 0.10 or p_op >= 0.65:
-                        candidate_indices.append((idx, p_op, pathologies[idx]))
-                else:
-                    if p_raw >= 0.06 or p_op >= 0.55:
-                        candidate_indices.append((idx, p_op, pathologies[idx]))
+            # Calibrated clinical criteria to prevent false positives on normal scans:
+            # 1. Rare pathologies (op_thresh < 0.035, e.g. Pneumothorax, Fracture, Emphysema, Fibrosis, Hernia)
+            #    require clear operational elevation (p_op >= 0.68) and genuine raw model probability (p_raw >= 0.18).
+            # 2. Standard pathologies (Pneumonia, Consolidation, Infiltration, Effusion, Atelectasis, Cardiomegaly)
+            #    require operational elevation (p_op >= 0.62) and genuine raw model probability (p_raw >= 0.15).
+            if op_thresh < 0.035:
+                is_candidate = (p_op >= 0.68 and p_raw >= 0.18)
+            else:
+                is_candidate = (p_op >= 0.62 and p_raw >= 0.15)
 
-        # Sort descending, top 6
+            if is_candidate:
+                candidate_indices.append((idx, p_op, p_raw, pathologies[idx]))
+
+        # Sort descending by probability, retain top 3 dominant findings
         candidate_indices.sort(key=lambda x: x[1], reverse=True)
-        top_candidates = candidate_indices[:6]
+        top_candidates = candidate_indices[:3]
 
         case_dir = settings.UPLOAD_DIR / case_input.case_id
         case_dir.mkdir(parents=True, exist_ok=True)
         heatmaps_dict: Dict[str, str] = {}
 
-        for idx, prob, path_name in top_candidates:
+        for idx, prob, p_raw, path_name in top_candidates:
             # Grad-CAM computation
             cam = compute_gradcam(model, tensor_224.clone(), idx)
+            # Skip if activation is flat/diffuse background noise with no focal concentration
+            if float(cam.max()) < 0.35:
+                continue
+
             loc = determine_location(cam, path_name)
             sev = calculate_severity(prob, cam)
 
-            # Confidence band
-            if prob >= 0.70:
+            # Calibrated confidence band
+            if prob >= 0.75:
                 conf = "high"
-            elif prob >= 0.50:
-                conf = "moderate"
             else:
-                conf = "low"
+                conf = "moderate"
 
             findings.append(
                 ImagingFinding(
@@ -399,11 +404,11 @@ def run_imaging_agent(case_input: CaseInput) -> ImagingReport:
 
         if not findings:
             quality_notes.append(
-                "Unremarkable radiograph: No findings exceed clinical significance threshold (all probabilities within baseline normal limits)."
+                "Unremarkable radiograph: Lung fields are clear. No acute focal consolidation, pneumothorax, effusion, or gross cardiomegaly detected above operating threshold."
             )
             msg = "Unremarkable chest radiograph: No acute cardiopulmonary abnormality detected."
         else:
-            msg = f"DenseNet-121 identified {len(findings)} pathologies meeting clinical operating threshold (p >= 50%)."
+            msg = f"DenseNet-121 identified {len(findings)} significant radiographic findings meeting clinical diagnostic criteria."
 
         return ImagingReport(
             status="ok",

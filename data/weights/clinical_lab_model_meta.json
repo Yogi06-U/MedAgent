@@ -1,0 +1,40 @@
+{
+  "architecture": "ClinicalLabNet (PyTorch Multi-Label Deep Neural Network)",
+  "in_features": 108,
+  "num_classes": 20,
+  "classes": [
+    "Acute Kidney Injury / Renal Failure",
+    "Severe Hyperkalemia",
+    "Hypokalemia",
+    "Diabetic Ketoacidosis (DKA)",
+    "Type 2 Diabetes Mellitus / Severe Hyperglycemia",
+    "Severe Hypoglycemia",
+    "High Anion Gap Metabolic Acidosis",
+    "Hyponatremia",
+    "Hypernatremia / Severe Dehydration",
+    "Acute Bacterial Infection / Sepsis Risk",
+    "Microcytic Iron Deficiency Anemia",
+    "Macrocytic / Megaloblastic Anemia",
+    "Severe Thrombocytopenia",
+    "Acute Hepatocellular Injury / Transaminitis",
+    "Cholestasis / Obstructive Biliary Disease",
+    "Acute Pancreatitis",
+    "Acute Myocardial Infarction / ACS",
+    "Hypercalcemia",
+    "Atherogenic Dyslipidemia",
+    "Normal / Unremarkable Laboratory Profile"
+  ],
+  "parameters": 71252,
+  "metrics": {
+    "macro_accuracy": 0.9842592592592592,
+    "macro_precision": 0.8655493940719102,
+    "macro_recall": 0.9701980464904987,
+    "macro_f1": 0.9085254367706002,
+    "exact_match_ratio": 0.7372134038800705
+  },
+  "epochs": 20,
+  "real_patient_samples": 3335,
+  "total_corpus_samples": 11335,
+  "train_samples": 9068,
+  "test_samples": 1134
+}

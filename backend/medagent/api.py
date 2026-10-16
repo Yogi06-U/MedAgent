@@ -62,7 +62,7 @@ app.add_middleware(
 _cases_state: Dict[str, Dict[str, Any]] = {}
 
 ALLOWED_IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".dcm", ".dicom"}
-ALLOWED_LAB_EXTS = {".txt", ".csv", ".tsv", ".pdf"}
+ALLOWED_LAB_EXTS = {".txt", ".csv", ".tsv", ".pdf", ".png", ".jpg", ".jpeg"}
 ALLOWED_AUDIO_EXTS = {".wav", ".mp3", ".m4a", ".ogg", ".webm"}
 
 
@@ -93,6 +93,7 @@ def run_pipeline_task(case_id: str, case_input: CaseInput) -> None:
 
     try:
         log_event(case_id, "case_started")
+        emit_event(case_id, "case_initialized", {"case_input": case_input.model_dump()})
         res = graph_app.invoke(initial_state, config=config)
         _cases_state[case_id].update(res)
     except Exception as e:
@@ -176,8 +177,10 @@ async def create_case(
     patient_age: Optional[int] = Form(None),
     patient_sex: Optional[str] = Form(None),
     lab_text: Optional[str] = Form(None),
+    image_files: List[UploadFile] = File(default_factory=list),
+    lab_files: List[UploadFile] = File(default_factory=list),
     files: List[UploadFile] = File(default_factory=list),
-) -> Dict[str, str]:
+) -> Dict[str, Any]:
     """Ingest a clinical case with multimodal attachments and trigger LangGraph."""
     case_id = f"case_{uuid.uuid4().hex[:10]}"
     case_upload_dir = settings.UPLOAD_DIR / case_id
@@ -186,6 +189,39 @@ async def create_case(
     image_paths: List[str] = []
     lab_paths: List[str] = []
 
+    # 1. Process dedicated image uploads (CXR / DICOM)
+    for file in image_files:
+        if not file.filename:
+            continue
+        safe_name = sanitize_filename(file.filename)
+        dest_path = case_upload_dir / safe_name
+        content = await file.read()
+        if len(content) > settings.MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File {file.filename} exceeds maximum allowed size of 50 MB.",
+            )
+        with open(dest_path, "wb") as f:
+            f.write(content)
+        image_paths.append(str(dest_path))
+
+    # 2. Process dedicated lab report uploads (PDF / CSV / Scanned Image / TXT)
+    for file in lab_files:
+        if not file.filename:
+            continue
+        safe_name = sanitize_filename(file.filename)
+        dest_path = case_upload_dir / safe_name
+        content = await file.read()
+        if len(content) > settings.MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File {file.filename} exceeds maximum allowed size of 50 MB.",
+            )
+        with open(dest_path, "wb") as f:
+            f.write(content)
+        lab_paths.append(str(dest_path))
+
+    # 3. Process generic files for backward compatibility
     for file in files:
         if not file.filename:
             continue
@@ -193,7 +229,6 @@ async def create_case(
         dest_path = case_upload_dir / safe_name
         ext = dest_path.suffix.lower()
 
-        # Check total size
         content = await file.read()
         if len(content) > settings.MAX_UPLOAD_SIZE_BYTES:
             raise HTTPException(
@@ -204,7 +239,7 @@ async def create_case(
         with open(dest_path, "wb") as f:
             f.write(content)
 
-        if ext in ALLOWED_IMAGE_EXTS:
+        if ext in ALLOWED_IMAGE_EXTS and not image_paths:
             image_paths.append(str(dest_path))
         elif ext in ALLOWED_LAB_EXTS:
             lab_paths.append(str(dest_path))
@@ -220,7 +255,7 @@ async def create_case(
     )
 
     background_tasks.add_task(run_pipeline_task, case_id, case_input)
-    return {"case_id": case_id, "status": "processing"}
+    return {"case_id": case_id, "status": "processing", "case_input": case_input.model_dump()}
 
 
 @app.get("/api/cases/{case_id}/events")

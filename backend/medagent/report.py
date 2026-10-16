@@ -110,6 +110,8 @@ def generate_pdf_report(
     lab_report: Optional[LabReport] = None,
 ) -> str:
     """Compile PDF document using ReportLab and return absolute file path."""
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+
     settings.REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     pdf_filename = f"report_{case_input.case_id}.pdf"
     pdf_path = settings.REPORTS_DIR / pdf_filename
@@ -117,60 +119,119 @@ def generate_pdf_report(
     doc = SimpleDocTemplate(
         str(pdf_path),
         pagesize=letter,
-        rightMargin=40,
-        leftMargin=40,
-        topMargin=40,
-        bottomMargin=40,
+        rightMargin=36,
+        leftMargin=36,
+        topMargin=32,
+        bottomMargin=32,
     )
 
     styles = getSampleStyleSheet()
 
-    # Custom styles
+    # Medical theme color palette
+    c_primary = colors.HexColor("#0E3B43")
+    c_secondary = colors.HexColor("#1F8A9A")
+    c_dark = colors.HexColor("#1E293B")
+    c_border = colors.HexColor("#CBD5E1")
+    c_grid = colors.HexColor("#E2E8F0")
+    c_alt_row = colors.HexColor("#F8FAFC")
+    c_danger_text = colors.HexColor("#991B1B")
+    c_danger_bg = colors.HexColor("#FEE2E2")
+
     title_style = ParagraphStyle(
         "DocTitle",
         parent=styles["Heading1"],
         fontName="Helvetica-Bold",
-        fontSize=20,
-        leading=24,
-        textColor=colors.HexColor("#0E3B43"),
+        fontSize=17,
+        leading=20,
+        textColor=c_primary,
     )
     h2_style = ParagraphStyle(
         "DocH2",
         parent=styles["Heading2"],
         fontName="Helvetica-Bold",
-        fontSize=12,
-        leading=16,
-        textColor=colors.HexColor("#0E3B43"),
-        spaceBefore=10,
-        spaceAfter=4,
+        fontSize=10.5,
+        leading=14,
+        textColor=c_primary,
+        spaceBefore=7,
+        spaceAfter=3,
     )
     body_style = ParagraphStyle(
         "DocBody",
         parent=styles["BodyText"],
         fontName="Helvetica",
-        fontSize=9,
-        leading=13,
-        textColor=colors.HexColor("#1A202C"),
+        fontSize=8,
+        leading=11.5,
+        textColor=c_dark,
     )
     disclaimer_style = ParagraphStyle(
         "DocDisclaimer",
         parent=styles["Normal"],
         fontName="Helvetica-Bold",
-        fontSize=8,
-        leading=11,
-        textColor=colors.HexColor("#C0392B"),
-        backColor=colors.HexColor("#FDF2E9"),
-        borderPadding=6,
-        spaceBefore=6,
-        spaceAfter=10,
+        fontSize=7,
+        leading=9.5,
+        textColor=c_danger_text,
+        backColor=c_danger_bg,
+        borderPadding=4,
+        spaceBefore=3,
+        spaceAfter=5,
+    )
+
+    # Reusable table cell typography
+    th_style = ParagraphStyle(
+        "TableTH",
+        fontName="Helvetica-Bold",
+        fontSize=7.5,
+        leading=9.5,
+        textColor=colors.whitesmoke,
+        alignment=TA_LEFT,
+    )
+    th_center_style = ParagraphStyle(
+        "TableTHCenter",
+        fontName="Helvetica-Bold",
+        fontSize=7.5,
+        leading=9.5,
+        textColor=colors.whitesmoke,
+        alignment=TA_CENTER,
+    )
+    td_style = ParagraphStyle(
+        "TableTD",
+        fontName="Helvetica",
+        fontSize=7.5,
+        leading=10,
+        textColor=c_dark,
+        alignment=TA_LEFT,
+    )
+    td_bold = ParagraphStyle(
+        "TableTDBold",
+        fontName="Helvetica-Bold",
+        fontSize=7.5,
+        leading=10,
+        textColor=c_primary,
+        alignment=TA_LEFT,
+    )
+    td_center = ParagraphStyle(
+        "TableTDCenter",
+        fontName="Helvetica",
+        fontSize=7.5,
+        leading=10,
+        textColor=c_dark,
+        alignment=TA_CENTER,
+    )
+    td_center_bold = ParagraphStyle(
+        "TableTDCenterBold",
+        fontName="Helvetica-Bold",
+        fontSize=7.5,
+        leading=10,
+        textColor=c_primary,
+        alignment=TA_CENTER,
     )
 
     story = []
 
     # Title & Metadata
     story.append(Paragraph("MedAgent Clinical Decision Support", title_style))
-    story.append(Spacer(1, 4))
-    
+    story.append(Spacer(1, 2))
+
     meta_text = (
         f"<b>Case ID:</b> {case_input.case_id} &nbsp;|&nbsp; "
         f"<b>Status:</b> {decision.decision.upper()} &nbsp;|&nbsp; "
@@ -178,91 +239,227 @@ def generate_pdf_report(
         f"<b>Date:</b> {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
     )
     story.append(Paragraph(meta_text, body_style))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 3))
 
-    # Mandatory Disclaimer
+    # Mandatory Regulatory Disclaimer
     story.append(Paragraph(f"<b>CRITICAL DISCLAIMER:</b> {CLINICAL_DISCLAIMER}", disclaimer_style))
-    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#1F8A9A"), spaceAfter=8))
+    story.append(HRFlowable(width="100%", thickness=1, color=c_secondary, spaceAfter=4))
 
-    # Patient info
-    patient_info = (
-        f"<b>Patient:</b> Age: {case_input.patient_age or 'N/A'}, Sex: {case_input.patient_sex or 'N/A'}<br/>"
-        f"<b>Notes:</b> {case_input.clinical_text}"
-    )
+    # Patient Intake & Presentation
     story.append(Paragraph("Patient Intake & Presentation", h2_style))
+    patient_info = (
+        f"<b>Patient:</b> Age: {case_input.patient_age if case_input.patient_age is not None else 'Unspecified'}, "
+        f"Sex: {case_input.patient_sex.capitalize() if case_input.patient_sex else 'Unspecified'}<br/>"
+        f"<b>Notes & History:</b> {case_input.clinical_text}"
+    )
     story.append(Paragraph(patient_info, body_style))
 
-    # Clinical Impression
+    # Clinical Summary / Impression
     summary_text = decision.edited_summary if decision.edited_summary else draft.summary
     story.append(Paragraph("Clinical Summary / Impression", h2_style))
     story.append(Paragraph(summary_text, body_style))
 
-    # Differentials
+    # Red Flags & Urgent Alerts
+    if draft.red_flags:
+        rf_items = "<br/>".join([f"• <b>{rf}</b>" for rf in draft.red_flags])
+        rf_box = ParagraphStyle(
+            "DocRedFlags",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=7.5,
+            leading=10.5,
+            textColor=c_danger_text,
+            backColor=c_danger_bg,
+            borderPadding=4,
+            spaceBefore=3,
+            spaceAfter=4,
+        )
+        story.append(Paragraph(f"<b>[URGENT CLINICAL ALERT] RED FLAGS IDENTIFIED:</b><br/>{rf_items}", rf_box))
+
+    # Ranked Differential Diagnoses Table
     story.append(Paragraph("Ranked Differential Diagnoses", h2_style))
-    diff_data = [["#", "Condition", "Likelihood", "Key Supporting Findings", "Citations"]]
+    diff_data = [[
+        Paragraph("#", th_center_style),
+        Paragraph("Condition", th_style),
+        Paragraph("Likelihood", th_center_style),
+        Paragraph("Key Supporting Findings", th_style),
+        Paragraph("Citations", th_center_style),
+    ]]
+
     for idx, d in enumerate(draft.differentials, 1):
+        lk = d.likelihood.lower()
+        if lk == "high":
+            lk_color = "#991B1B"
+        elif lk == "moderate":
+            lk_color = "#B45309"
+        else:
+            lk_color = "#475569"
+        lk_html = f'<font color="{lk_color}"><b>{d.likelihood.upper()}</b></font>'
+
+        supp_text = ", ".join(d.supporting_findings) if d.supporting_findings else "Clinical context"
+        cit_text = ", ".join(d.evidence_ids) if d.evidence_ids else "None"
+
         diff_data.append([
-            str(idx),
-            d.condition,
-            d.likelihood.capitalize(),
-            Paragraph(", ".join(d.supporting_findings) or "Clinical context", body_style),
-            ", ".join(d.evidence_ids) or "None",
+            Paragraph(str(idx), td_center_bold),
+            Paragraph(d.condition, td_bold),
+            Paragraph(lk_html, td_center),
+            Paragraph(supp_text, td_style),
+            Paragraph(cit_text, td_center),
         ])
 
-    diff_table = Table(diff_data, colWidths=[20, 160, 65, 230, 55])
+    diff_table = Table(diff_data, colWidths=[22, 145, 68, 240, 65])
     diff_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0E3B43")),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, 0), 9),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
+        ("BACKGROUND", (0, 0), (-1, 0), c_primary),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 2.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 4),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_alt_row]),
+        ("BOX", (0, 0), (-1, -1), 0.5, c_border),
+        ("INNERGRID", (0, 0), (-1, -1), 0.5, c_grid),
     ]))
     story.append(diff_table)
 
-    # Imaging Findings
-    if imaging_report and imaging_report.status == "ok" and imaging_report.findings:
+    # Radiographic Findings (Chest X-Ray) Table
+    if imaging_report and imaging_report.status == "ok":
         story.append(Paragraph("Radiographic Findings (Chest X-Ray)", h2_style))
-        img_data = [["Pathology", "Probability", "Location", "Indicative Severity", "Confidence"]]
-        for f in imaging_report.findings:
-            img_data.append([
-                f.finding,
-                f"{f.probability:.1%}",
-                f.location,
-                f.severity.capitalize(),
-                f.confidence.capitalize(),
-            ])
-        img_table = Table(img_data, colWidths=[140, 80, 150, 90, 70])
-        img_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1F8A9A")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 8),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-            ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ]))
-        story.append(img_table)
+        if imaging_report.findings:
+            img_data = [[
+                Paragraph("Pathology / Finding", th_style),
+                Paragraph("Probability", th_center_style),
+                Paragraph("Location", th_style),
+                Paragraph("Indicative Severity", th_center_style),
+                Paragraph("Confidence", th_center_style),
+            ]]
+            for f in imaging_report.findings:
+                img_data.append([
+                    Paragraph(f.finding, td_bold),
+                    Paragraph(f"<b>{f.probability:.1%}</b>", td_center),
+                    Paragraph(f.location, td_style),
+                    Paragraph(f.severity.capitalize(), td_center),
+                    Paragraph(f.confidence.capitalize(), td_center),
+                ])
+            img_table = Table(img_data, colWidths=[140, 68, 182, 80, 70])
+            img_table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), c_secondary),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("TOPPADDING", (0, 0), (-1, -1), 2.5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_alt_row]),
+                ("BOX", (0, 0), (-1, -1), 0.5, c_border),
+                ("INNERGRID", (0, 0), (-1, -1), 0.5, c_grid),
+            ]))
+            story.append(img_table)
+        else:
+            story.append(Paragraph("<b>Unremarkable Radiograph:</b> No acute cardiopulmonary abnormalities detected above operating threshold.", body_style))
 
-    # Laboratory Findings
-    if lab_report and lab_report.status == "ok" and lab_report.results:
-        story.append(Paragraph("Laboratory Findings & Identified Patterns", h2_style))
-        if lab_report.patterns:
-            patterns_text = "<b>Identified Clinical Patterns:</b> " + "; ".join(
-                [f"<b>{p.name}</b> ({p.urgency})" for p in lab_report.patterns]
-            )
-            story.append(Paragraph(patterns_text, body_style))
-            story.append(Spacer(1, 4))
+        if imaging_report.image_quality_notes:
+            notes_str = "; ".join(imaging_report.image_quality_notes)
+            story.append(Paragraph(f"<i>Quality Notes:</i> {notes_str}", body_style))
 
-    # Physician Attestation
-    story.append(Spacer(1, 12))
-    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#94A3B8"), spaceAfter=8))
+    # Laboratory Findings & Identified Patterns
+    if lab_report and lab_report.status == "ok":
+        has_results = bool(lab_report.results)
+        has_patterns = bool(lab_report.patterns)
+        if has_results or has_patterns:
+            story.append(Paragraph("Laboratory Findings & Identified Patterns", h2_style))
+
+            if has_results:
+                lab_data = [[
+                    Paragraph("Analyte / Test", th_style),
+                    Paragraph("Result", th_center_style),
+                    Paragraph("Unit", th_center_style),
+                    Paragraph("Reference Interval", th_center_style),
+                    Paragraph("Flag", th_center_style),
+                ]]
+
+                for r in lab_report.results:
+                    flag_val = r.flag.lower()
+                    if "critical" in flag_val:
+                        flag_html = f'<font color="#991B1B"><b>{r.flag.upper()}</b></font>'
+                    elif flag_val in ("high", "low"):
+                        flag_html = f'<font color="#B45309"><b>{r.flag.upper()}</b></font>'
+                    elif flag_val == "normal":
+                        flag_html = f'<font color="#065F46">NORMAL</font>'
+                    else:
+                        flag_html = f'<font color="#64748B">{r.flag.upper()}</font>'
+
+                    ref_str = (
+                        f"{r.ref_low:g} – {r.ref_high:g}"
+                        if r.ref_low is not None and r.ref_high is not None
+                        else "—"
+                    )
+
+                    lab_data.append([
+                        Paragraph(r.test or r.raw_name, td_bold),
+                        Paragraph(f"<b>{r.value:g}</b>", td_center),
+                        Paragraph(r.unit, td_center),
+                        Paragraph(ref_str, td_center),
+                        Paragraph(flag_html, td_center),
+                    ])
+
+                lab_table = Table(lab_data, colWidths=[165, 70, 75, 130, 100])
+                lab_table.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, 0), c_primary),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("TOPPADDING", (0, 0), (-1, -1), 2.5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, c_alt_row]),
+                    ("BOX", (0, 0), (-1, -1), 0.5, c_border),
+                    ("INNERGRID", (0, 0), (-1, -1), 0.5, c_grid),
+                ]))
+                story.append(lab_table)
+                story.append(Spacer(1, 3))
+
+            if lab_report.inferred_diseases:
+                inf_lines = []
+                for d in lab_report.inferred_diseases:
+                    conf_txt = f" [{d.confidence_score * 100.0:.1f}% Neural Confidence]" if getattr(d, "confidence_score", None) is not None else ""
+                    if d.disease == "Normal / Unremarkable Laboratory Profile":
+                        inf_lines.append(f"• <b>{d.disease}</b>{conf_txt}: {d.clinical_rationale}")
+                        continue
+                    sev_col = "#991B1B" if d.severity in ("critical", "severe") else "#B45309" if d.severity == "moderate" else "#065F46"
+                    sev_badge = f'<font color="{sev_col}"><b>[{d.severity.upper()}]</b></font>'
+                    inf_lines.append(f"• {sev_badge} <b>{d.disease}</b>{conf_txt} (Likelihood: {d.likelihood.upper()}): {d.clinical_rationale} <i>Pathophysiology:</i> {d.pathophysiology}")
+                story.append(Paragraph(f"<b>Inferred Diagnoses (ClinicalLabNet Neural Classifier):</b><br/>{'<br/>'.join(inf_lines)}", body_style))
+                story.append(Spacer(1, 3))
+
+            if has_patterns:
+                pat_lines = []
+                for p in lab_report.patterns:
+                    urg_color = "#991B1B" if p.urgency == "urgent" else "#B45309" if p.urgency == "soon" else "#065F46"
+                    urg_badge = f'<font color="{urg_color}"><b>[{p.urgency.upper()}]</b></font>'
+                    pat_lines.append(f"• {urg_badge} <b>{p.name}:</b> {p.description}")
+                patterns_text = "<br/>".join(pat_lines)
+                story.append(Paragraph(f"<b>Synthesized Clinical Patterns:</b><br/>{patterns_text}", body_style))
+
+    # Suggested Diagnostic Workup
+    if draft.suggested_workup:
+        story.append(Paragraph("Suggested Diagnostic Workup", h2_style))
+        workup_items = "<br/>".join([f"• {item}" for item in draft.suggested_workup])
+        story.append(Paragraph(workup_items, body_style))
+
+    # Physician Attestation & Signature
+    story.append(Spacer(1, 8))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#94A3B8"), spaceAfter=6))
+
+    doc_name = decision.reviewer.strip()
+    if not doc_name.lower().startswith("dr.") and not doc_name.lower().startswith("dr "):
+        doc_display = f"Dr. {doc_name}"
+    else:
+        doc_display = doc_name
+
     attestation_text = (
-        f"<b>Physician Attestation:</b> I, Dr. {decision.reviewer}, hereby confirm that I have reviewed, "
+        f"<b>Physician Attestation:</b> I, {doc_display}, hereby confirm that I have reviewed, "
         f"verified, and adjusted this decision-support synthesis. Decision: <b>{decision.decision.upper()}</b>.<br/>"
         f"<b>Reviewer Notes:</b> {decision.notes or 'No specific notes recorded.'}<br/>"
-        f"<b>Signature:</b> ___________________________ &nbsp;&nbsp;&nbsp;&nbsp; <b>Date:</b> {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
+        f"<b>Signature:</b> ___________________________ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "
+        f"<b>Date:</b> {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
     )
     story.append(Paragraph(attestation_text, body_style))
 

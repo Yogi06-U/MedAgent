@@ -152,6 +152,15 @@ def test_lab_agent_normalization_and_patterns():
     assert "Renal Impairment" in renal_patterns
     assert "Metabolic Acidosis" in renal_patterns
 
+    # 5. Neural Lab Agent Deep Learning Inferences
+    assert len(rep_renal.inferred_diseases) >= 2
+    inferred_names = [d.disease for d in rep_renal.inferred_diseases]
+    assert any("Kidney" in n for n in inferred_names)
+    assert any("Hyperkalemia" in n for n in inferred_names)
+    top_pred = rep_renal.inferred_diseases[0]
+    assert top_pred.confidence_score is not None
+    assert top_pred.confidence_score >= 0.50
+
 
 def test_rag_agent_chunking_and_retrieval():
     """Verify document chunker, no duplicate chunks, query construction, and retrieval."""
